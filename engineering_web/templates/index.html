@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Engineering Technology Solver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">ENG<span>TECH</span></div>
+        <div class="status">ENGINEERING WORKSPACE</div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <p class="eyebrow">ENGINEERING CALCULATION PLATFORM</p>
+            <h1>General Engineering<br>Technology Solver</h1>
+            <p>
+                Select a discipline, enter your measurements,
+                and calculate results with clear units.
+            </p>
+        </section>
+
+        <section class="workspace">
+            <div class="calculator">
+                <h2>Engineering Calculator</h2>
+                <p class="muted">Choose your calculation below.</p>
+
+                <form method="POST" id="calculatorForm">
+                    <label for="discipline">Engineering discipline</label>
+                    <select id="discipline" name="discipline">
+                        {% for item in disciplines %}
+                            <option value="{{ item }}"
+                                {% if item == discipline %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="calculation">Calculation</label>
+                    <select id="calculation" name="calculation">
+                        {% for name in calculations %}
+                            <option value="{{ name }}"
+                                {% if name == calculation %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <div id="inputFields">
+                        {% for field_name, label in config.fields %}
+                            <label for="{{ field_name }}">{{ label }}</label>
+                            <input
+                                type="number"
+                                id="{{ field_name }}"
+                                name="{{ field_name }}"
+                                step="any"
+                                required
+                                value="{{ request.form.get(field_name, '') }}"
+                                placeholder="Enter {{ label.lower() }}"
+                            >
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit">Calculate Result</button>
+                </form>
+
+                {% if error %}
+                    <div class="error">
+                        <strong>Check your inputs</strong>
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+
+                {% if result %}
+                    <div class="result">
+                        <p class="eyebrow">CALCULATION COMPLETE</p>
+                        <h3>{{ result.calculation }}</h3>
+                        <div class="answer">
+                            {{ "%.6g"|format(result.value) }}
+                            <span>{{ result.unit }}</span>
+                        </div>
+                        <p class="muted">Result based on the values entered.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <aside class="info-panel">
+                <h2>Solver Overview</h2>
+                <div class="info-item">
+                    <span>01</span>
+                    <div>
+                        <strong>Petroleum</strong>
+                        <p>Hydrostatic pressure calculations.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span>02</span>
+                    <div>
+                        <strong>Mechanical</strong>
+                        <p>Force, pressure, and kinetic energy.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span>03</span>
+                    <div>
+                        <strong>Electrical</strong>
+                        <p>Electrical power calculations.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span>04</span>
+                    <div>
+                        <strong>Civil</strong>
+                        <p>Basic geometric area calculations.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span>05</span>
+                    <div>
+                        <strong>Mathematics</strong>
+                        <p>Density and general calculations.</p>
+                    </div>
+                </div>
+                <p class="notice">
+                    Educational tool only. Verify formulas, units,
+                    assumptions, and results before practical use.
+                </p>
+            </aside>
+        </section>
+
+        <footer>
+            General Engineering Technology Solver · Learning Edition
+        </footer>
+    </main>
+
+    <script>
+        const disciplineSelect = document.getElementById("discipline");
+        const calculationSelect = document.getElementById("calculation");
+
+        disciplineSelect.addEventListener("change", () => {
+            const params = new URLSearchParams();
+            params.set("discipline", disciplineSelect.value);
+            window.location.href = "/?" + params.toString();
+        });
+
+        calculationSelect.addEventListener("change", () => {
+            const params = new URLSearchParams();
+            params.set("discipline", disciplineSelect.value);
+            params.set("calculation", calculationSelect.value);
+            window.location.href = "/?" + params.toString();
+        });
+    </script>
+</body>
+</html>

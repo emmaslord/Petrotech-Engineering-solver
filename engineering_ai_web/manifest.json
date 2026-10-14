@@ -1,0 +1,10 @@
+
+{
+  "name": "Engineering AI",
+  "short_name": "Engineering AI",
+  "description": "Your intelligent engineering assistant.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}

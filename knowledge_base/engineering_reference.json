@@ -1,0 +1,37 @@
+
+{
+  "references": [
+    {
+      "title": "Engineering basics",
+      "content": "Use design reviews, safety checks, and documentation for all engineering work."
+    },
+    {
+      "title": "Mechanical design",
+      "content": "Check loads, tolerances, materials, and failure modes before finalizing designs."
+    },
+    {
+      "title": "Electrical design",
+      "content": "Verify voltage, current, grounding, protection, and insulation requirements."
+    },
+    {
+      "title": "Hydrostatic pressure",
+      "content": "For drilling fluid with density in pounds per gallon and true vertical depth in feet, hydrostatic pressure in psi equals 0.052 multiplied by mud weight in ppg multiplied by TVD in feet. Example: 10 ppg at 5000 ft gives 2600 psi."
+    },
+    {
+      "title": "Formation pressure",
+      "content": "Formation pressure in psi equals formation pressure gradient in psi per foot multiplied by true vertical depth in feet. Example: 0.465 psi/ft at 5000 ft gives 2325 psi."
+    },
+    {
+      "title": "Required mud weight",
+      "content": "Required mud weight in ppg equals target pressure in psi divided by 0.052 multiplied by true vertical depth in feet. Use mud weight = target pressure / (0.052 * TVD)."
+    },
+    {
+      "title": "API gravity",
+      "content": "API gravity is calculated using API gravity = (141.5 / specific gravity at 60 degrees Fahrenheit) - 131.5. For specific gravity 0.85, API gravity is approximately 34.97 degrees API."
+    },
+    {
+      "title": "Engineering safety",
+      "content": "Engineering calculations are preliminary checks. Verify units, assumptions, operating conditions, applicable standards, and results before making real-world engineering decisions."
+    }
+  ]
+}

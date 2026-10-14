@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101828">
+    <meta name="description" content="Engineering AI — your intelligent engineering assistant.">
+    <title>Engineering AI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- Top navigation -->
+    <header class="topbar">
+        <button
+            type="button"
+            class="icon-button"
+            id="menuButton"
+            aria-label="Toggle navigation"
+            aria-controls="sidebar"
+            aria-expanded="false"
+        >☰</button>
+
+        
+<div class="brand">
+    <img
+        src="assets/engineering_ai_logo.png"
+        alt="Engineering AI logo"
+        class="brand-logo"
+    />
+    <div class="brand-text">
+        <span>Engineering AI</span>
+        <span class="brand-subtitle">By Excellent Intelligence</span>
+    </div>
+</div>
+
+
+        <div class="top-actions">
+            <button
+                type="button"
+                class="icon-button"
+                id="soundButton"
+                aria-label="Sound settings"
+                title="Sound settings"
+            >🔇</button>
+
+            <button
+                type="button"
+                class="icon-button"
+                id="newChatButton"
+                aria-label="Start a new chat"
+                title="New chat"
+            >＋</button>
+        </div>
+    </header>
+
+    <!-- Navigation and conversation history -->
+    
+<div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
+
+    
+    <aside class="sidebar" id="sidebar" hidden>
+        <div class="sidebar-heading">
+            <span class="sidebar-brand-mark">EA</span>
+            <div>
+                <strong>Engineering AI</strong>
+                <small>Engineering workspace</small>
+            </div>
+        </div>
+
+        <button type="button" class="sidebar-link" data-action="new-chat">
+            <span aria-hidden="true">＋</span> New chat
+        </button>
+
+        <button type="button" class="sidebar-link" data-action="calculators">
+            <span aria-hidden="true">▦</span> Calculators
+        </button>
+
+        <button type="button" class="sidebar-link" data-action="history">
+            <span aria-hidden="true">◷</span> Chat history
+        </button>
+
+        <button type="button" class="sidebar-link" data-action="settings">
+            <span aria-hidden="true">⚙</span> Settings
+        </button>
+
+        <button type="button" class="sidebar-link" data-action="about">
+            <span aria-hidden="true">ⓘ</span> About
+        </button>
+
+        <section class="chat-history-section">
+            <h3>Recent conversations</h3>
+            <div id="chatHistoryList"></div>
+        </section>
+    </aside>
+
+    <!-- Sign-in panel: stays outside the protected workspace -->
+    <section
+        id="authPanel"
+        class="auth-panel"
+        aria-labelledby="authTitle"
+    >
+        <div class="auth-brand-mark">EA</div>
+        <p class="eyebrow">YOUR ENGINEERING WORKSPACE</p>
+        <h1 id="authTitle">Welcome to Engineering AI</h1>
+        <p class="auth-description">
+            Your intelligent assistant for engineering calculations,
+            technical research, and problem-solving.
+        </p>
+
+        <form id="authForm">
+            <label for="authEmail">Email address</label>
+            <input
+                type="email"
+                id="authEmail"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+            >
+
+            <label for="authPassword">Password</label>
+            <input
+                type="password"
+                id="authPassword"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                required
+            >
+
+            <button type="submit" id="signInButton" class="auth-primary">
+                Sign in
+            </button>
+
+            <button type="button" id="signUpButton" class="auth-secondary">
+                Create account
+            </button>
+
+            <p id="authMessage" role="status" aria-live="polite"></p>
+        </form>
+    </section>
+
+    <!-- Signed-in account status -->
+    <div id="accountBar" hidden>
+        <span class="account-indicator" aria-hidden="true"></span>
+        <span id="accountEmail"></span>
+        <button type="button" id="signOutButton">Sign out</button>
+    </div>
+
+    <!-- Main workspace -->
+    <main class="main-content">
+         <div id="chatView"></div>
+       
+         <section class="workspace-heading">
+            <p class="eyebrow">ENGINEERING INTELLIGENCE</p>
+            <h1>Engineering, made clearer.</h1>
+            <p>Ask a question, solve a calculation, or explore a technical topic.</p>
+        </section>
+
+        <section class="welcome" id="welcome">
+            <div class="assistant-logo" aria-hidden="true">EA</div>
+            <h2>What are we working on today?</h2>
+            <p>
+                Start with a question or choose a suggested engineering topic.
+            </p>
+
+            <div class="suggestion-grid">
+                <button type="button" class="suggestion-card"
+                    data-prompt="Explain hydrostatic pressure and its engineering applications.">
+                    <span class="suggestion-icon">◉</span>
+                    <strong>Pressure calculations</strong>
+                    <small>Explore pressure, depth, and fluid properties</small>
+                </button>
+
+                <button type="button" class="suggestion-card"
+                    data-prompt="Explain API gravity and show the formula with an example.">
+                    <span class="suggestion-icon">◈</span>
+                    <strong>Petroleum engineering</strong>
+                    <small>Review oil properties and useful formulas</small>
+                </button>
+
+                <button type="button" class="suggestion-card"
+                    data-prompt="Explain how to approach an engineering calculation step by step, including units and assumptions.">
+                    <span class="suggestion-icon">⌘</span>
+                    <strong>Engineering problems</strong>
+                    <small>Work through a technical problem</small>
+                </button>
+
+                <button type="button" class="suggestion-card"
+                    data-prompt="Explain a recent engineering technology development and identify reliable sources.">
+                    <span class="suggestion-icon">⌕</span>
+                    <strong>Technical research</strong>
+                    <small>Explore technologies and research topics</small>
+                </button>
+            </div>
+        </section>
+
+        <!-- Existing conversation messages -->
+        <section
+            class="chat-messages"
+            id="chatMessages"
+            aria-live="polite"
+            aria-label="Conversation"
+        ></section>
+
+        <p id="statusMessage" class="status-message"
+            role="status" aria-live="polite"></p>
+    </main>
+
+
+</div>
+
+
+<section id="aboutPage" class="about-page" hidden>
+    <div class="about-hero">
+        <img
+            src="/assets/engineering_ai_logo.png"
+            alt="Engineering AI logo"
+            class="about-product-logo"
+        >
+
+        <p class="eyebrow">A PRODUCT BY EXCELLENT INTELLIGENCE</p>
+        <h1>About Engineering AI</h1>
+
+        <p>
+            Engineering AI is an AI-powered engineering and technology
+            assistant developed to support learning, technical exploration,
+            problem-solving, and engineering calculations. It brings
+            engineering knowledge and artificial intelligence together
+            to make complex technical topics easier to understand.
+        </p>
+
+        <img
+            src="/assets/excellent_intelligence_logo%20(2).png"
+            alt="Excellent Intelligence company logo"
+            class="about-company-logo"
+        >
+    </div>
+
+    <div class="about-section">
+        <h2>Our mission</h2>
+        <p>
+            Our mission is to make engineering knowledge more accessible
+            through intelligent technology, understandable explanations,
+            and practical digital tools that support students, learners,
+            and engineering professionals.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>What Engineering AI offers</h2>
+        <ul>
+            <li>
+                <strong>Engineering calculations:</strong>
+                Assistance with formulas, numerical problems, units,
+                and calculation steps.
+            </li>
+            <li>
+                <strong>Technical explanations:</strong>
+                Clear discussions of engineering principles and concepts.
+            </li>
+            <li>
+                <strong>Engineering exploration:</strong>
+                Support for learning about petroleum, mechanical,
+                electrical, civil, chemical, and computer engineering.
+            </li>
+            <li>
+                <strong>AI-powered assistance:</strong>
+                A conversational workspace for asking technical questions
+                and exploring possible solutions.
+            </li>
+        </ul>
+    </div>
+
+    <div class="about-section">
+        <h2>Our vision</h2>
+        <p>
+            We envision a future where accessible engineering technology
+            helps people learn, explore ideas, develop solutions, and
+            participate in innovation across multiple engineering fields.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Our commitment to responsible engineering</h2>
+        <p>
+            Engineering AI is designed to assist with learning and
+            preliminary technical analysis. AI-generated answers and
+            calculations may contain errors and depend on the accuracy
+            of the supplied information, units, assumptions, and methods.
+            Always verify important results against applicable standards,
+            trusted references, and qualified engineering judgment before
+            using them in real-world designs or operations.
+        </p>
+    </div>
+
+    <div class="about-section contact-section">
+        <h2>Contact Excellent Intelligence</h2>
+        <p>
+            For enquiries, feedback, or information about Engineering AI,
+            you can contact Excellent Intelligence through the channel below.
+        </p>
+
+        <div class="contact-item">
+            <strong>Email:</strong>
+            <a href="mailto:excellentintel@gmail.com">
+                excellentintel@gmail.com
+            </a>
+        </div>
+
+        <div class="contact-item">
+            <strong>Phone:</strong>
+            <a href="tel:+2349016949173">
+                09016949173
+            </a>
+        </div>
+    </div>
+
+    <p class="about-note">
+        Engineering AI is a product of Excellent Intelligence.
+        It is an assistance tool and does not replace independent
+        verification or qualified professional engineering review.
+    </p>
+</section>
+
+    <!-- Message composer -->
+    <footer class="composer-area">
+        <form class="composer" id="chatForm">
+
+            <label class="sr-only" for="messageInput">
+                Ask Engineering AI
+            </label>
+
+            <div class="input-container">
+                <textarea
+                    id="messageInput"
+                    placeholder="Ask an engineering question..."
+                    rows="1"
+                ></textarea>
+
+                <div class="input-actions">
+                    <button
+                        type="button"
+                        class="mode-button active"
+                        id="thinkButton"
+                        aria-pressed="true"
+                    >◉ Think</button>
+
+                    <button
+                        type="button"
+                        class="mode-button"
+                        id="searchButton"
+                        aria-pressed="false"
+                    >⌕ Search</button>
+
+                    <button
+                        type="button"
+                        class="icon-button"
+                        id="attachButton"
+                        aria-label="Attach a file"
+                        title="Attach a file"
+                    >＋</button>
+
+                    <button
+                        type="button"
+                        class="icon-button"
+                        id="voiceButton"
+                        aria-label="Voice input"
+                        title="Voice input"
+                    >🎙</button>
+
+                    <button
+                        type="submit"
+                        class="send-button"
+                        id="sendButton"
+                        aria-label="Send message"
+                    >↑</button>
+                </div>
+
+                <p class="engineering-disclaimer">
+                    Verify engineering results against applicable standards
+                    before using them in real-world designs or operations.
+                </p>
+            </div>
+
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <input
+                type="file"
+                id="cameraInput"
+                accept="image/*"
+                capture="environment"
+                hidden
+            >
+            <input
+                type="file"
+                id="documentInput"
+                accept=".pdf,.txt,.csv,.doc,.docx,.xlsx,.xls"
+                hidden
+            >
+
+            <div id="attachmentMenu" class="attachment-menu" hidden>
+                <button type="button" id="cameraOption">Take a photo</button>
+                <button type="button" id="photoOption">Choose an image</button>
+                <button type="button" id="documentOption">Attach a document</button>
+            </div>
+
+            <div id="attachmentPreview" class="attachment-preview" hidden></div>
+        </form>
+
+        <p class="composer-footer">
+            Engineering AI can make mistakes. Check important results independently.
+        </p>
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

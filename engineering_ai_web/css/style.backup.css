@@ -1,0 +1,769 @@
+
+:root {
+    font-family: "Century Gothic", "Trebuchet MS", Arial, sans-serif;
+    color: #171717;
+    background: #ffffff;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+
+    --blue: #4775f5;
+    --blue-light: #edf3ff;
+    --muted: #92959d;
+    --border: #eeeeef;
+    --surface: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: var(--surface);
+}
+
+button,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    height: 72px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+    background: #fff;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.brand-mark,
+.assistant-logo {
+    display: grid;
+    place-items: center;
+    color: white;
+    background: var(--blue);
+    font-weight: 700;
+}
+
+.brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+}
+
+.top-actions,
+.composer-actions,
+.mode-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-button {
+    border: 0;
+    background: transparent;
+    color: #222;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    font-size: 24px;
+}
+
+.icon-button:hover {
+    background: #f3f4f6;
+}
+
+.main-content {
+    width: 100%;
+    max-width: 1050px;
+    flex: 1;
+    margin: 0 auto;
+    padding: 24px 28px 230px;
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome {
+    flex: 1;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 35px 0;
+}
+
+.assistant-logo {
+    width: 68px;
+    height: 68px;
+    border-radius: 23px;
+    font-size: 23px;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 28px #4775f51c;
+}
+
+.welcome h1 {
+    font-size: clamp(27px, 4vw, 40px);
+    letter-spacing: -1.5px;
+    margin: 0 0 10px;
+}
+
+.welcome > p {
+    font-size: clamp(17px, 2.5vw, 22px);
+    margin: 0;
+    color: #343434;
+}
+
+.welcome-description {
+    max-width: 440px;
+    margin-top: 16px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+}
+
+.chat-message {
+    max-width: 85%;
+    padding: 14px 17px;
+    border-radius: 19px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background: var(--blue-light);
+    border-bottom-right-radius: 5px;
+}
+
+.chat-message.assistant {
+    align-self: flex-start;
+    background: #f7f8fa;
+    border-bottom-left-radius: 5px;
+}
+
+.message-role {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 5px;
+}
+
+.composer-area {
+    width: min(850px, calc(100% - 40px));
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 0 14px;
+    background: linear-gradient(to bottom, #ffffff00, #fff 15%);
+    z-index: 3;
+}
+
+.composer {
+    border: 1px solid #e8e8ec;
+    border-radius: 29px;
+    padding: 19px 20px 14px;
+    box-shadow: 0 8px 35px #0000000b;
+    background: #fff;
+}
+
+.composer textarea {
+    width: 100%;
+    min-height: 42px;
+    max-height: 180px;
+    resize: none;
+    border: 0;
+    outline: none;
+    padding: 5px 4px 12px;
+    background: transparent;
+    color: #171717;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.composer textarea::placeholder {
+    color: #a7a8ae;
+}
+
+.composer-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.mode-button {
+    border: 1px solid #dbe5ff;
+    background: var(--blue-light);
+    color: var(--blue);
+    padding: 9px 15px;
+    border-radius: 22px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.mode-button.active {
+    border-color: #a9c0ff;
+    box-shadow: inset 0 0 0 1px #a9c0ff;
+}
+
+.send-button {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    color: white;
+    background: var(--blue);
+    font-size: 24px;
+}
+
+.send-button.visible {
+    display: inline-grid;
+    place-items: center;
+}
+
+.disclaimer {
+    margin: 10px 8px 0;
+    color: #96979c;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.sidebar {
+    position: absolute;
+    top: 64px;
+    left: 18px;
+    width: 240px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 12px 35px #00000012;
+    z-index: 5;
+}
+
+.sidebar[hidden] {
+    display: none;
+}
+
+.sidebar-heading {
+    font-weight: 700;
+    padding: 10px;
+}
+
+.sidebar-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 10px;
+    background: transparent;
+    border: 0;
+    border-radius: 9px;
+}
+
+.sidebar-link:hover {
+    background: #f4f6fb;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (min-width: 1000px) {
+    .main-content {
+        padding-top: 35px;
+    }
+
+    .composer-area {
+        bottom: 14px;
+    }
+
+    .main-content {
+        padding-bottom: 205px;
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        height: 60px;
+        padding: 0 12px;
+        gap: 5px;
+    }
+
+    .brand {
+        font-size: 15px;
+        gap: 6px;
+    }
+
+    .brand-mark {
+        width: 29px;
+        height: 29px;
+    }
+
+    .top-actions {
+        gap: 0;
+    }
+
+    .icon-button {
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 21px;
+    }
+
+    .main-content {
+        padding: 10px 15px 205px;
+    }
+
+    .welcome {
+        min-height: 340px;
+    }
+
+    .assistant-logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 20px;
+        margin-bottom: 18px;
+    }
+
+    .welcome h1 {
+        letter-spacing: -1px;
+    }
+
+    .welcome-description {
+        font-size: 13px;
+        max-width: 310px;
+    }
+
+    .composer-area {
+        width: calc(100% - 22px);
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .composer {
+        padding: 13px 12px 11px;
+        border-radius: 25px;
+    }
+
+    .composer textarea {
+        font-size: 15px;
+        min-height: 40px;
+    }
+
+    .mode-buttons,
+    .composer-actions {
+        gap: 5px;
+    }
+
+    .mode-button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .composer-actions .icon-button {
+        min-width: 33px;
+        font-size: 21px;
+    }
+
+    .disclaimer {
+        font-size: 10px;
+        margin-top: 7px;
+    }
+
+    .chat-message {
+        max-width: 94%;
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+}
+
+.composer {
+    position: relative;
+}
+
+.attachment-menu {
+    position: absolute;
+    right: 10px;
+    bottom: calc(100% + 10px);
+    width: 225px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    background: white;
+    box-shadow: 0 10px 35px #00000014;
+    z-index: 10;
+}
+
+.attachment-menu[hidden],
+.attachment-preview[hidden] {
+    display: none;
+}
+
+.attachment-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #222;
+    text-align: left;
+}
+
+.attachment-option:hover {
+    background: #f3f6ff;
+}
+
+.attachment-option span:first-child {
+    font-size: 21px;
+}
+
+.attachment-preview {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #f8f9fc;
+    font-size: 12px;
+}
+
+.attachment-item img {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 7px;
+}
+
+.attachment-item span {
+    overflow-wrap: anywhere;
+}
+
+.attachment-remove {
+    border: 0;
+    background: transparent;
+    color: #777;
+    font-size: 18px;
+}
+
+
+/* Engineering AI sidebar */
+#sidebar {
+    transition: transform 0.25s ease;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+/* Mobile sidebar */
+@media (max-width: 768px) {
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+    }
+
+    #sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+
+/* Ensure the sidebar hidden state is respected */
+#sidebar[hidden] {
+    display: none !important;
+}
+
+
+.engineering-disclaimer {
+    display: block;
+    width: 100%;
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8b8b95;
+}
+
+
+/* Engineering AI disclaimer below the action buttons */
+.engineering-disclaimer {
+    display: block;
+    width: 100%;
+    margin: 8px 0 0;
+    padding: 0 4px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8b8b95;
+}
+
+/* Keep the input and action buttons stacked */
+.input-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Keep the action buttons in a horizontal row */
+.input-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+
+/* Stack the message input, buttons, and disclaimer vertically */
+.input-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Keep the buttons on a horizontal row */
+.input-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Place the disclaimer beneath the buttons */
+.engineering-disclaimer {
+    display: block;
+    width: 100%;
+    margin: 8px 0 0;
+    padding: 0 4px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8b8b95;
+}
+
+/* Ensure hidden elements stay hidden */
+#sidebar[hidden],
+#attachmentMenu[hidden],
+#attachmentPreview[hidden] {
+    display: none !important;
+}
+
+
+
+/* Engineering AI — saved conversation history */
+
+.conversation-history-section {
+    margin-top: 22px;
+    padding: 0 12px 16px;
+    min-width: 0;
+}
+
+.conversation-history-section h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #777783;
+}
+
+.conversation-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    border-radius: 9px;
+}
+
+.history-item.selected {
+    background: #edf3ff;
+}
+
+.history-open-button {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding: 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #34343d;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+}
+
+.history-open-button:hover {
+    background: #f0f0f5;
+}
+
+.history-delete-button {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #858590;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.history-delete-button:hover {
+    background: #fce9e9;
+    color: #b42318;
+}
+
+.history-empty {
+    margin: 0;
+    color: #858590;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+#sidebar[hidden],
+#attachmentMenu[hidden],
+#attachmentPreview[hidden] {
+    display: none !important;
+}
+
+
+
+.chat-history-section {
+    margin-top: 24px;
+    padding: 0 12px;
+}
+
+.chat-history-section h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+#chatHistoryList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.history-item.active {
+    background: rgba(128, 128, 128, 0.15);
+}
+
+.history-open {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    border: none;
+    background: transparent;
+    color: inherit;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.history-delete {
+    border: none;
+    background: transparent;
+    color: inherit;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.history-open:hover,
+.history-delete:hover {
+    background: rgba(128, 128, 128, 0.15);
+}
+
+.history-empty {
+    font-size: 13px;
+    opacity: 0.7;
+    padding: 8px;
+}

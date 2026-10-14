@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Technology Platform</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">ENGINEERING<span>TECH</span></a>
+        <span class="top-label">Engineering Workspace</span>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <p class="eyebrow">YOUR ENGINEERING WORKSPACE</p>
+            <h1>Engineering Technology Platform</h1>
+            <p class="hero-text">
+                One central dashboard for petroleum and
+                multi-discipline engineering calculations.
+            </p>
+        </section>
+
+        <section class="section-heading">
+            <div>
+                <h2>Your engineering tools</h2>
+                <p>Select a module to open its application.</p>
+            </div>
+            <span class="module-count">
+                {{ modules|length }} MODULES
+            </span>
+        </section>
+
+        <section class="module-grid">
+            {% for module in modules %}
+            <article class="module-card">
+                <div class="module-icon">{{ module.icon }}</div>
+
+                <p class="category">{{ module.category }}</p>
+                <h3>{{ module.name }}</h3>
+                <p class="description">{{ module.description }}</p>
+
+                <p class="status">{{ module.status }}</p>
+
+                <a class="launch-button"
+                   href="{{ module.url }}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Open application <span>↗</span>
+                </a>
+            </article>
+            {% endfor %}
+        </section>
+
+        <section class="notice">
+            <strong>Engineering note</strong>
+            <p>
+                Use calculations for learning and preliminary checks.
+                Verify formulas, units and assumptions before relying
+                on results for engineering decisions.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        Engineering Technology Platform · Development version
+    </footer>
+</body>
+</html>

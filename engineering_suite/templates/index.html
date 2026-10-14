@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Technology Solver</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">ET</div>
+            <div>
+                <h1>Engineering Technology Solver</h1>
+                <p>One platform. Multiple engineering disciplines.</p>
+            </div>
+        </div>
+        <span class="status">CALCULATION SYSTEM</span>
+    </header>
+
+    <main class="container">
+        <section class="welcome">
+            <p class="eyebrow">ENGINEERING WORKSPACE</p>
+            <h2>Welcome to your engineering dashboard.</h2>
+            <p>
+                Select a discipline, choose a calculation, and enter your
+                values. Results update automatically when your inputs change.
+            </p>
+        </section>
+
+        <section class="stats">
+            <article class="stat-card">
+                <span>DISCIPLINES</span>
+                <strong>5</strong>
+                <small>Engineering categories</small>
+            </article>
+            <article class="stat-card">
+                <span>CALCULATIONS</span>
+                <strong id="calculation-count">16</strong>
+                <small>Available tools</small>
+            </article>
+            <article class="stat-card">
+                <span>UPDATE MODE</span>
+                <strong>Live</strong>
+                <small>Automatic recalculation</small>
+            </article>
+        </section>
+
+        <section class="workspace">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">CALCULATOR</p>
+                        <h2>Calculation inputs</h2>
+                    </div>
+                    <span class="step-number">01</span>
+                </div>
+
+                <label for="discipline">Engineering discipline</label>
+                <select id="discipline">
+                    <option value="All">All disciplines</option>
+                    <option value="Petroleum Engineering">Petroleum Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="General Engineering">General Engineering</option>
+                </select>
+
+                <label for="calculation">Select calculation</label>
+                <select id="calculation"></select>
+
+                <div id="input-fields" class="input-grid"></div>
+
+                <p class="live-note">
+                    <span class="live-dot"></span>
+                    Results recalculate as you enter values.
+                </p>
+
+                <button id="reset-button" type="button">Reset inputs</button>
+            </div>
+
+            <div class="panel result-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">OUTPUT</p>
+                        <h2>Calculation result</h2>
+                    </div>
+                    <span class="step-number">02</span>
+                </div>
+
+                <p id="result-category" class="result-category">
+                    Waiting for input
+                </p>
+
+                <div class="result-box" aria-live="polite">
+                    <span>CALCULATED VALUE</span>
+                    <div id="result">—</div>
+                </div>
+
+                <p id="result-message">
+                    Enter valid values to calculate your result.
+                </p>
+
+                <div class="result-footer">
+                    <span>Calculation status</span>
+                    <strong id="result-status">Awaiting input</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="notice">
+            <strong>Engineering note</strong>
+            <p>
+                This application is intended for education and preliminary
+                calculations. Check units, formulas, assumptions, and results
+                independently before making engineering decisions.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        Engineering Technology Solver · Development Edition
+    </footer>
+
+    <script id="calculation-data" type="application/json">
+        {{ calculations | tojson | safe }}
+    </script>
+    <script>
+        const calculationDataElement = document.getElementById('calculation-data');
+        window.calculationData = JSON.parse(calculationDataElement.textContent);
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

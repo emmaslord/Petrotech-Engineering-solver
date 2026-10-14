@@ -1,0 +1,33 @@
+﻿# Private credentials and environment files
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+**/secrets.toml
+
+# Python virtual environments
+.venv/
+.venv-*/
+venv/
+env/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local development artifacts
+.DS_Store
+Thumbs.db
+
+# Additional Python environment
+.venv/
+
+# Python cache directories
+**/__pycache__/
+**/.pytest_cache/
+
+# Local backup copies
+*.memory-backup

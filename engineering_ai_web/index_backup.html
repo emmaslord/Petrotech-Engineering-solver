@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="Engineering AI — your intelligent engineering assistant.">
+    <title>Engineering AI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <!-- Top navigation -->
+        <header class="topbar">
+            <button
+                type="button"
+                class="icon-button"
+                id="menuButton"
+                aria-label="Open navigation"
+                aria-controls="sidebar"
+                aria-expanded="false"
+            >☰</button>
+
+            <a class="brand" href="#" aria-label="Engineering AI home">
+                <span class="brand-mark">E</span>
+                <span>Engineering AI</span>
+            </a>
+
+            <div class="top-actions">
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="soundButton"
+                    aria-label="Toggle sound"
+                >🔇</button>
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="newChatButton"
+                    aria-label="Start a new chat"
+                >⊕</button>
+            </div>
+        </header>
+
+        <!-- Navigation drawer -->
+        <aside class="sidebar" id="sidebar" hidden>
+            <div class="sidebar-heading">Engineering AI</div>
+
+            <button type="button" class="sidebar-link" data-action="new-chat">
+                ＋ New chat
+            </button>
+
+            <button type="button" class="sidebar-link" data-action="calculators">
+                ▦ Calculators
+            </button>
+
+            <button type="button" class="sidebar-link" data-action="history">
+                ◷ Chat history
+            </button>
+
+            <button type="button" class="sidebar-link" data-action="settings">
+                ⚙ Settings
+            </button>
+
+            <button type="button" class="sidebar-link" data-action="about">
+                ⓘ About
+            </button>
+        </aside>
+
+<div class="chat-history-section">
+    <h3>Chat history</h3>
+    <div id="chatHistoryList"></div>
+</div>
+
+
+
+        <!-- Main chat -->
+        <main class="main-content">
+
+            
+            
+<!-- Authentication panel -->
+<section id="authPanel" class="auth-panel" aria-labelledby="authTitle">
+    <h2 id="authTitle">Sign in to Engineering AI</h2>
+    <p>Sign in to access your Engineering AI account.</p>
+
+    <form id="authForm">
+        <label for="authEmail">Email address</label>
+        <input
+            type="email"
+            id="authEmail"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+        >
+
+        <label for="authPassword">Password</label>
+        <input
+            type="password"
+            id="authPassword"
+            autocomplete="current-password"
+            placeholder="Enter your password"
+            required
+        >
+
+        <button type="submit" id="signInButton">Sign in</button>
+        <button type="button" id="signUpButton">Create account</button>
+
+        <p id="authMessage" role="status" aria-live="polite"></p>
+    </form>
+</section>
+
+<!-- Signed-in account status -->
+<div id="accountBar" hidden>
+    <span id="accountEmail"></span>
+    <button type="button" id="signOutButton">Sign out</button>
+</div>
+
+<!-- Main chat -->
+<main class="main-content">
+
+
+        
+
+<!-- Signed-in account status -->
+<div id="accountBar" hidden>
+    <span id="accountEmail"></span>
+    <button type="button" id="signOutButton">Sign out</button>
+</div>
+
+<!-- Main chat -->
+<main class="main-content">
+
+            
+            <section class="welcome" id="welcome">
+                <div class="assistant-logo" aria-hidden="true">
+                    <span>EA</span>
+                </div>
+
+                <h1>Good afternoon.</h1>
+                <p>What are we working on today?</p>
+
+                <div class="welcome-description">
+                    Your intelligent assistant for engineering,
+                    calculations, research, and technical learning.
+                </div>
+            </section>
+
+            <!-- Conversation messages -->
+            <section
+                class="chat-messages"
+                id="chatMessages"
+                aria-live="polite"
+                aria-label="Conversation"
+            ></section>
+
+        </main>
+
+        <!-- Message composer -->
+        <footer class="composer-area">
+            <form class="composer" id="chatForm">
+
+                <label class="sr-only" for="messageInput">
+                    Ask Engineering AI
+                </label>
+
+                <div class="input-container">
+
+                    <!-- Message input -->
+                    <textarea
+                        id="messageInput"
+                        placeholder="Type a message or ask an engineering question..."
+                        rows="1"
+                    ></textarea>
+
+                    <!-- Action buttons -->
+                    <div class="input-actions">
+
+                        <button
+                            type="button"
+                            class="mode-button active"
+                            id="thinkButton"
+                            aria-pressed="true"
+                        >
+                            ◉ Think
+                        </button>
+
+                        <button
+                            type="button"
+                            class="mode-button"
+                            id="searchButton"
+                            aria-pressed="false"
+                        >
+                            ◎ Search
+                        </button>
+
+                        <button
+                            type="button"
+                            class="icon-button"
+                            id="attachButton"
+                            aria-label="Attach a file"
+                        >
+                            +
+                        </button>
+
+                        <button
+                            type="button"
+                            class="icon-button"
+                            id="voiceButton"
+                            aria-label="Voice input"
+                        >
+                            🎙
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="send-button"
+                            id="sendButton"
+                            aria-label="Send message"
+                        >
+                            ↑
+                        </button>
+
+                    </div>
+
+                    <!-- Disclaimer: now beneath the buttons -->
+                    <p class="engineering-disclaimer">
+                        Verify engineering results against applicable standards
+                        before using them in real-world designs or operations.
+                    </p>
+
+                </div>
+
+                <!-- Image upload -->
+                <input
+                    type="file"
+                    id="imageInput"
+                    accept="image/*"
+                    hidden
+                >
+
+                <!-- Camera -->
+                <input
+                    type="file"
+                    id="cameraInput"
+                    accept="image/*"
+                    capture="environment"
+                    hidden
+                >
+
+                <!-- Document upload -->
+                <input
+                    type="file"
+                    id="documentInput"
+                    accept=".pdf,.txt,.csv,.doc,.docx,.xlsx,.xls"
+                    hidden
+                >
+
+                <!-- Attachment menu -->
+                <div id="attachmentMenu" class="attachment-menu" hidden>
+                    <button type="button" id="cameraOption">
+                        Take a photo
+                    </button>
+
+                    <button type="button" id="photoOption">
+                        Choose an image
+                    </button>
+
+                    <button type="button" id="documentOption">
+                        Attach a document
+                    </button>
+                </div>
+
+                <!-- Attachment preview -->
+                <div
+                    id="attachmentPreview"
+                    class="attachment-preview"
+                    hidden
+                ></div>
+
+            </form>
+        </footer>
+
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
