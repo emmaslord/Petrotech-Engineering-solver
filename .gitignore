@@ -31,3 +31,6 @@ Thumbs.db
 
 # Local backup copies
 *.memory-backup
+
+ADMIN_USER_IDS=a5679de0-a455-4f9c-b0a3-df1e6df161f9
+

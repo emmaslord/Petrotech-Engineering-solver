@@ -8,7 +8,10 @@
     <meta name="description" content="Engineering AI — your intelligent engineering assistant.">
     <title>Engineering AI</title>
 
-    <link rel="stylesheet" href="css/style.css">
+   <link
+     rel="stylesheet" href="css/style.css">
+    <link
+     rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
     <link rel="manifest" href="manifest.json">
 </head>
 
@@ -215,27 +218,30 @@
 </div>
 
 
+
 <section id="aboutPage" class="about-page" hidden>
     <div class="about-hero">
         <img
-            src="/assets/engineering_ai_logo.png"
+            src="assets/engineering_ai_logo.png"
             alt="Engineering AI logo"
             class="about-product-logo"
         >
 
         <p class="eyebrow">A PRODUCT BY EXCELLENT INTELLIGENCE</p>
-        <h1>About Engineering AI</h1>
+
+        <h1>Engineering Intelligence. Made Accessible.</h1>
 
         <p>
             Engineering AI is an AI-powered engineering and technology
-            assistant developed to support learning, technical exploration,
-            problem-solving, and engineering calculations. It brings
-            engineering knowledge and artificial intelligence together
-            to make complex technical topics easier to understand.
+            assistant built to help people understand technical concepts,
+            explore engineering problems, and perform calculations with
+            greater clarity. By combining artificial intelligence with
+            engineering knowledge, we aim to make technical learning and
+            problem-solving more accessible.
         </p>
 
         <img
-            src="/assets/excellent_intelligence_logo%20(2).png"
+            src="assets/excellent_intelligence_logo%20(2).png"
             alt="Excellent Intelligence company logo"
             class="about-company-logo"
         >
@@ -244,65 +250,92 @@
     <div class="about-section">
         <h2>Our mission</h2>
         <p>
-            Our mission is to make engineering knowledge more accessible
-            through intelligent technology, understandable explanations,
-            and practical digital tools that support students, learners,
-            and engineering professionals.
+            Our mission is to bridge the gap between complex engineering
+            knowledge and practical understanding. We develop intelligent
+            digital tools that help students, learners, technology
+            enthusiasts, and engineering professionals explore ideas,
+            understand calculations, and approach technical challenges
+            with greater confidence.
         </p>
     </div>
 
     <div class="about-section">
-        <h2>What Engineering AI offers</h2>
+        <h2>What Engineering AI can help you do</h2>
         <ul>
             <li>
                 <strong>Engineering calculations:</strong>
-                Assistance with formulas, numerical problems, units,
-                and calculation steps.
+                Work through formulas, numerical problems, units,
+                assumptions, and calculation steps.
             </li>
             <li>
-                <strong>Technical explanations:</strong>
-                Clear discussions of engineering principles and concepts.
+                <strong>Technical learning:</strong>
+                Explore engineering principles through clear explanations
+                and structured problem-solving.
             </li>
             <li>
-                <strong>Engineering exploration:</strong>
-                Support for learning about petroleum, mechanical,
-                electrical, civil, chemical, and computer engineering.
+                <strong>Multidisciplinary exploration:</strong>
+                Investigate topics in petroleum, mechanical, electrical,
+                civil, chemical, and computer engineering, alongside
+                broader engineering technology.
             </li>
             <li>
                 <strong>AI-powered assistance:</strong>
-                A conversational workspace for asking technical questions
-                and exploring possible solutions.
+                Ask technical questions, examine possible approaches,
+                and use a conversational workspace to develop your
+                understanding.
+            </li>
+            <li>
+                <strong>Continuous development:</strong>
+                Benefit from a platform designed to grow as new
+                engineering tools and learning capabilities are developed.
             </li>
         </ul>
     </div>
 
     <div class="about-section">
+        <h2>Built for learning and innovation</h2>
+        <p>
+            We believe that technology should make knowledge easier to
+            explore. Engineering AI is being developed around that idea:
+            combining accessible explanations, practical tools, and
+            artificial intelligence in one workspace for technical
+            discovery and problem-solving.
+        </p>
+    </div>
+
+    <div class="about-section">
         <h2>Our vision</h2>
         <p>
-            We envision a future where accessible engineering technology
-            helps people learn, explore ideas, develop solutions, and
-            participate in innovation across multiple engineering fields.
+            Our vision is to build a trusted engineering technology
+            platform that empowers people to learn, experiment with ideas,
+            investigate technical challenges, and contribute to innovation
+            across engineering disciplines.
         </p>
     </div>
 
     <div class="about-section">
         <h2>Our commitment to responsible engineering</h2>
         <p>
-            Engineering AI is designed to assist with learning and
-            preliminary technical analysis. AI-generated answers and
-            calculations may contain errors and depend on the accuracy
-            of the supplied information, units, assumptions, and methods.
-            Always verify important results against applicable standards,
-            trusted references, and qualified engineering judgment before
-            using them in real-world designs or operations.
+            Engineering AI is an assistance tool for education,
+            exploration, and preliminary technical analysis. AI-generated
+            responses and calculations can contain errors and may depend
+            on the quality of the supplied information, units, assumptions,
+            and calculation methods.
+        </p>
+        <p>
+            Always independently verify important results using trusted
+            technical references, applicable standards, appropriate
+            validation methods, and qualified engineering review before
+            applying them to real-world designs or operations.
         </p>
     </div>
 
     <div class="about-section contact-section">
-        <h2>Contact Excellent Intelligence</h2>
+        <h2>Connect with Excellent Intelligence</h2>
         <p>
-            For enquiries, feedback, or information about Engineering AI,
-            you can contact Excellent Intelligence through the channel below.
+            Have feedback, questions, or suggestions for Engineering AI?
+            We welcome enquiries that help us improve the platform and
+            make engineering technology more useful.
         </p>
 
         <div class="contact-item">
@@ -322,103 +355,119 @@
 
     <p class="about-note">
         Engineering AI is a product of Excellent Intelligence.
-        It is an assistance tool and does not replace independent
-        verification or qualified professional engineering review.
+        It supports technical learning and preliminary analysis and
+        does not replace independent verification or qualified
+        professional engineering review.
     </p>
 </section>
 
-    <!-- Message composer -->
-    <footer class="composer-area">
-        <form class="composer" id="chatForm">
 
-            <label class="sr-only" for="messageInput">
-                Ask Engineering AI
-            </label>
+ 
 
-            <div class="input-container">
-                <textarea
-                    id="messageInput"
-                    placeholder="Ask an engineering question..."
-                    rows="1"
-                ></textarea>
+<!-- Message composer -->
+<footer class="composer-area">
+    <form class="composer" id="chatForm">
 
-                <div class="input-actions">
-                    <button
-                        type="button"
-                        class="mode-button active"
-                        id="thinkButton"
-                        aria-pressed="true"
-                    >◉ Think</button>
+       <div class="input-container">
 
-                    <button
-                        type="button"
-                        class="mode-button"
-                        id="searchButton"
-                        aria-pressed="false"
-                    >⌕ Search</button>
+<div class="input-container">
 
-                    <button
-                        type="button"
-                        class="icon-button"
-                        id="attachButton"
-                        aria-label="Attach a file"
-                        title="Attach a file"
-                    >＋</button>
+    <div class="ai-mode-container">
+        <label class="ai-mode-label" for="aiModeSelect">
+            AI Mode
+        </label>
 
-                    <button
-                        type="button"
-                        class="icon-button"
-                        id="voiceButton"
-                        aria-label="Voice input"
-                        title="Voice input"
-                    >🎙</button>
+        <select id="aiModeSelect" name="aiMode">
+            <option value="general_engineering">General Engineering</option>
+            <option value="petroleum_engineering">Petroleum Engineering</option>
+            <option value="coding">Coding</option>
+            <option value="research">Research</option>
+        </select>
+    </div>
 
-                    <button
-                        type="submit"
-                        class="send-button"
-                        id="sendButton"
-                        aria-label="Send message"
-                    >↑</button>
-                </div>
+    <textarea
+        id="messageInput"
+        placeholder="Ask an engineering question..."
+        rows="1"
+    ></textarea>
 
-                <p class="engineering-disclaimer">
-                    Verify engineering results against applicable standards
-                    before using them in real-world designs or operations.
-                </p>
-            </div>
+    <div class="input-actions">
+        <button
+            type="button"
+            class="mode-button active"
+            id="thinkButton"
+            aria-pressed="true"
+        >◉ Think</button>
 
-            <input type="file" id="imageInput" accept="image/*" hidden>
-            <input
-                type="file"
-                id="cameraInput"
-                accept="image/*"
-                capture="environment"
-                hidden
-            >
-            <input
-                type="file"
-                id="documentInput"
-                accept=".pdf,.txt,.csv,.doc,.docx,.xlsx,.xls"
-                hidden
-            >
+        <button
+            type="button"
+            class="mode-button"
+            id="searchButton"
+            aria-pressed="false"
+        >⌕ Search</button>
 
-            <div id="attachmentMenu" class="attachment-menu" hidden>
-                <button type="button" id="cameraOption">Take a photo</button>
-                <button type="button" id="photoOption">Choose an image</button>
-                <button type="button" id="documentOption">Attach a document</button>
-            </div>
+        <button
+            type="button"
+            class="icon-button"
+            id="attachButton"
+            aria-label="Attach a file"
+            title="Attach a file"
+        >＋</button>
 
-            <div id="attachmentPreview" class="attachment-preview" hidden></div>
-        </form>
+        <button
+            type="button"
+            class="icon-button"
+            id="voiceButton"
+            aria-label="Voice input"
+            title="Voice input"
+        >🎙</button>
 
-        <p class="composer-footer">
-            Engineering AI can make mistakes. Check important results independently.
-        </p>
-    </footer>
+        <button
+            type="submit"
+            class="send-button"
+            id="sendButton"
+            aria-label="Send message"
+        >↑</button>
+    </div>
 
 </div>
 
+
+        <input type="file" id="imageInput" accept="image/*" hidden>
+        <input
+            type="file"
+            id="cameraInput"
+            accept="image/*"
+            capture="environment"
+            hidden
+        >
+        <input
+            type="file"
+            id="documentInput"
+            accept=".pdf,.txt,.csv,.doc,.docx,.xlsx,.xls"
+            hidden
+        >
+
+        <div id="attachmentMenu" class="attachment-menu" hidden>
+            <button type="button" id="cameraOption">Take a photo</button>
+            <button type="button" id="photoOption">Choose an image</button>
+            <button type="button" id="documentOption">Attach a document</button>
+        </div>
+
+        <div id="attachmentPreview" class="attachment-preview" hidden></div>
+    </form>
+
+    <p class="composer-footer">
+        Engineering AI can make mistakes. Check important results independently.
+    </p>
+</footer>
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
+

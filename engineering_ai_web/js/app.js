@@ -109,6 +109,7 @@ input.addEventListener("input", () => {
 // DISPLAY A MESSAGE
 // ============================================
 
+
 function addMessage(role, text) {
     const message = document.createElement("article");
     message.className = `chat-message ${role}`;
@@ -118,7 +119,21 @@ function addMessage(role, text) {
     label.textContent = role === "user" ? "You" : "Engineering AI";
 
     const content = document.createElement("div");
-    content.textContent = text;
+    content.className = "message-content";
+
+    if (role === "assistant" && window.marked && window.DOMPurify) {
+        const renderedMarkdown = window.marked.parse(String(text ?? ""));
+
+        content.innerHTML = window.DOMPurify.sanitize(renderedMarkdown);
+
+        if (window.hljs) {
+            content.querySelectorAll("pre code").forEach(codeBlock => {
+                window.hljs.highlightElement(codeBlock);
+            });
+        }
+    } else {
+        content.textContent = String(text ?? "");
+    }
 
     message.append(label, content);
     messages.appendChild(message);
@@ -534,25 +549,52 @@ form.addEventListener("submit", async event => {
         .slice(0, -1)
         .map(({ role, content }) => ({ role, content }));
 
-     console.log("DEBUG: saveCurrentMessages ENTERED");
     
-        saveCurrentMessages();
-    
-    const waitingMessage = addMessage(
-        "assistant",
-        selectedMode === "search"
-            ? "Preparing your search request..."
-            : "Engineering AI is thinking..."
-    );
+console.log("DEBUG: saveCurrentMessages ENTERED");
 
-    const waitingContent = waitingMessage.querySelector("div");
+saveCurrentMessages();
 
-    if (statusMessage) {
-        statusMessage.textContent = "Thinking...";
-    }
+// Create a placeholder for the assistant's response.
+const waitingMessage = addMessage("assistant", "");
+const waitingContent = waitingMessage.querySelector("div");
+waitingContent.textContent = "Thinking...";
 
-    
+    let effectiveQuestion = question;
+
     try {
+        // Upload and extract any attached files before asking the AI.
+        if (selectedAttachments.length > 0) {
+            if (statusMessage) {
+                statusMessage.textContent = "Reading your attachments...";
+            }
+
+            const uploadResult = await uploadAttachments(
+                [...selectedAttachments],
+                question
+            );
+
+            const extractedText = uploadResult.combined_text || "";
+
+            effectiveQuestion =
+                `${question || "Please analyze the attached files."}\n\n` +
+                `Extracted attachment text:\n${extractedText}`;
+
+            const filenames = uploadResult.files
+                .map(file => file.name)
+                .join(", ");
+
+            userMessage.content =
+                `${question ? question + "\n" : ""}Attached files: ${filenames}`;
+
+            selectedAttachments = [];
+            renderAttachments();
+            saveCurrentMessages();
+
+            if (statusMessage) {
+                statusMessage.textContent = "Preparing your answer...";
+            }
+        }
+
         // Keep calculation requests on the existing, tested endpoint.
         const calculatorTerms =
             /\b(hydrostatic pressure|formation pressure|mud weight|mudweight|api gravity|specific gravity|formation volume factor|reservoir)\b/i;
@@ -580,8 +622,9 @@ form.addEventListener("submit", async event => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        question: question,
-                        conversation_history: previousHistory
+                        question: effectiveQuestion,
+                        conversation_history: previousHistory,
+                        mode: document.getElementById("aiModeSelect").value
                     })
                 }
             );
@@ -634,9 +677,16 @@ form.addEventListener("submit", async event => {
                     }
 
                     if (typeof event.chunk === "string") {
-                        answer += event.chunk;
-                        waitingContent.textContent = answer;
-                    }
+    answer += event.chunk;
+
+    if (window.marked && window.DOMPurify) {
+        const renderedMarkdown = window.marked.parse(answer);
+        waitingContent.innerHTML =
+            window.DOMPurify.sanitize(renderedMarkdown);
+    } else {
+        waitingContent.textContent = answer;
+    }
+}
 
                     if (event.done) {
                         finished = true;
@@ -650,6 +700,16 @@ form.addEventListener("submit", async event => {
                     "The assistant returned an empty response."
                 );
             }
+        
+        if (window.hljs) {
+    waitingContent.querySelectorAll("pre code").forEach(codeBlock => {
+        window.hljs.highlightElement(codeBlock);
+    });
+}
+        
+        
+        
+        
         } else {
             // Preserve existing engineering calculation behavior.
             const response = await fetch(
@@ -661,7 +721,8 @@ form.addEventListener("submit", async event => {
                     },
                     body: JSON.stringify({
                         question: question,
-                        conversation_history: previousHistory
+                        conversation_history: previousHistory,
+                        mode: document.getElementById("aiModeSelect").value
                     })
                 }
             );
@@ -706,7 +767,19 @@ form.addEventListener("submit", async event => {
                 answer = JSON.stringify(result, null, 2);
             }
 
-            waitingContent.textContent = answer;
+            if (window.marked && window.DOMPurify) {
+    const renderedMarkdown = window.marked.parse(String(answer ?? ""));
+    waitingContent.innerHTML =
+        window.DOMPurify.sanitize(renderedMarkdown);
+
+    if (window.hljs) {
+        waitingContent.querySelectorAll("pre code").forEach(codeBlock => {
+            window.hljs.highlightElement(codeBlock);
+        });
+    }
+} else {
+    waitingContent.textContent = String(answer ?? "");
+}
         }
 
         // Preserve the existing conversation and cloud-save workflow.
@@ -896,6 +969,45 @@ function handleSelectedFiles(event) {
     renderAttachments();
     event.target.value = "";
 }
+
+
+async function uploadAttachments(files, question = "") {
+    const token = await window.engineeringAIAuth?.getAccessToken?.();
+
+    if (!token) {
+        throw new Error("Please sign in before uploading files.");
+    }
+
+    const formData = new FormData();
+
+    for (const file of files) {
+        formData.append("files", file);
+    }
+
+    formData.append("question", question);
+
+    const response = await fetch(
+        "http://127.0.0.1:5001/api/upload",
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+        throw new Error(
+            data.error || "The files could not be processed."
+        );
+    }
+
+    return data;
+}
+
 
 if (imageInput) {
     imageInput.addEventListener("change", handleSelectedFiles);
@@ -1116,12 +1228,15 @@ renderChatHistory();
         return;
     }
 
-    const protectedElements = [
-        document.querySelector(".main-content"),
-        document.querySelector(".composer-area"),
-        document.getElementById("sidebar"),
-        document.querySelector(".chat-history-section")
-    ].filter(Boolean);
+   
+const protectedElements = [
+    document.querySelector(".topbar"),
+    document.querySelector(".main-content"),
+    document.querySelector(".composer-area"),
+    document.getElementById("sidebar"),
+    document.querySelector(".chat-history-section")
+].filter(Boolean);
+
 
     let authClient = null;
     let currentSession = null;

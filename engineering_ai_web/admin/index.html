@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Engineering AI | Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">E</span>
+                <span>Engineering AI<small>ADMIN CONSOLE</small></span>
+            </a>
+
+            <nav aria-label="Admin navigation">
+                <a class="nav-link active" href="#overview">Overview</a>
+                <a class="nav-link" href="#users">User management</a>
+                <a class="nav-link" href="#activity">System activity</a>
+                <a class="nav-link" href="#health">System health</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                Administrator console
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">ENGINEERING AI / ADMIN</p>
+                    <h1>Dashboard overview</h1>
+                    <p class="muted">Monitor your platform from one place.</p>
+                </div>
+                <a class="back-link" href="../index.html">← Main application</a>
+            </header>
+
+            <section id="admin-notice" class="notice"
+                     role="status" aria-live="polite">
+                Checking administrator access…
+            </section>
+
+            <section id="overview">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">PLATFORM SUMMARY</p>
+                        <h2>System overview</h2>
+                    </div>
+                    <span class="preview-tag">Live user data</span>
+                </div>
+
+                <div class="stats-grid">
+                    <article class="stat-card">
+                        <span class="stat-label">Registered users</span>
+                        <strong id="overview-users-count">—</strong>
+                        <p>Registered accounts</p>
+                    </article>
+
+                    <article class="stat-card">
+                        <span class="stat-label">Active sessions</span>
+                        <strong>—</strong>
+                        <p>Session monitoring not connected</p>
+                    </article>
+
+                    <article class="stat-card">
+                        <span class="stat-label">API status</span>
+                        <strong id="api-status" class="pending">Not checked</strong>
+                        <p>Flask backend</p>
+                    </article>
+
+                    <article class="stat-card">
+                        <span class="stat-label">Database status</span>
+                        <strong id="database-status" class="pending">Not checked</strong>
+                        <p>Supabase connectivity</p>
+                    </article>
+                </div>
+            </section>
+
+            <section id="users" class="content-card">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">ACCESS CONTROL</p>
+                        <h2>User management</h2>
+                    </div>
+                </div>
+
+                <div class="users-toolbar">
+                    <p class="muted">Registered accounts · Read-only view</p>
+                    <button type="button" id="refresh-users">Refresh users</button>
+                </div>
+
+                <p id="users-message" class="muted" role="status">
+                    Waiting for administrator verification…
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Registered</th>
+                                <th>Last sign-in</th>
+                                <th>Email status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body"></tbody>
+                    </table>
+                </div>
+
+                <p class="muted">
+                    Showing up to <span id="users-count">0</span> accounts.
+                </p>
+            </section>
+
+            
+<section id="activity" class="content-card">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">OBSERVABILITY</p>
+            <h2>System activity</h2>
+            <p class="muted">
+                Recent administrative and system events.
+                Private conversation content is not displayed.
+            </p>
+        </div>
+        <button type="button" id="refresh-activity">
+            Refresh activity
+        </button>
+    </div>
+
+    <p id="activity-message" class="muted" role="status" aria-live="polite">
+        Waiting for administrator verification…
+    </p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Actor ID</th>
+                    <th>Details</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="activity-table-body"></tbody>
+        </table>
+    </div>
+
+    <p class="muted">
+        Showing up to 50 recent events.
+    </p>
+</section>
+
+
+            <footer>
+                Engineering AI · Administrative interface
+            </footer>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

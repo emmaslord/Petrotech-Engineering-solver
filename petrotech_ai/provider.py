@@ -54,7 +54,6 @@ def _ask_groq(question: str, system_prompt: str) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
         ],
-        tools=[{"type": "browser_search"}],
         temperature=0.2,
     )
 
@@ -64,6 +63,55 @@ def _ask_groq(question: str, system_prompt: str) -> str:
         raise RuntimeError("The AI provider returned an empty response.")
 
     return answer.strip()
+
+
+def search_ai(
+    question: str,
+    system_prompt: str = (
+        "You are Engineering AI, an engineering assistant. "
+        "Use web search for current or source-dependent questions. "
+        "Explain findings clearly and never invent facts or source URLs. "
+        "Preserve engineering units and state important assumptions."
+    ),
+) -> str:
+    """Answer a question using Groq browser search."""
+    from groq import Groq
+
+    question = question.strip()
+
+    if not question:
+        raise ValueError("Please enter a question to search.")
+
+    api_key = get_groq_api_key()
+
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is not configured. "
+            "Check your .streamlit/secrets.toml file."
+        )
+
+    client = Groq(api_key=api_key, timeout=60.0, max_retries=1)
+
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-120b",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": question},
+        ],
+        tools=[{"type": "browser_search"}],
+        temperature=0.2,
+        stream=False,
+    )
+
+    answer = response.choices[0].message.content
+
+    if not answer:
+        raise RuntimeError("The search provider returned an empty response.")
+
+    return answer.strip()
+
+
+
 def _ask_ollama(question: str, system_prompt: str) -> str:
     """Send a question to a locally running Ollama server."""
     import requests
@@ -139,7 +187,6 @@ def _stream_groq(question: str, system_prompt: str):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
         ],
-        tools=[{"type": "browser_search"}],
         temperature=0.2,
         stream=True,
     )
