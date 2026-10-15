@@ -36,7 +36,6 @@ from petrotech_ai.assistant import (
 )
 
 # File extraction dependencies.
-import easyocr
 import numpy as np
 from PIL import Image
 from pypdf import PdfReader
@@ -61,7 +60,9 @@ app.register_blueprint(admin_routes)
 
 @lru_cache(maxsize=1)
 def get_ocr_reader():
-    """Initialize EasyOCR once and reuse it for later image uploads."""
+    """Initialize EasyOCR only when image OCR is requested."""
+    import easyocr
+      
     return easyocr.Reader(["en"], gpu=False)
 
 

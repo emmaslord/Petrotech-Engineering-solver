@@ -1,0 +1,11 @@
+
+Flask
+Flask-Cors
+gunicorn
+supabase
+requests
+python-dotenv
+groq
+pypdf
+numpy
+Pillow
