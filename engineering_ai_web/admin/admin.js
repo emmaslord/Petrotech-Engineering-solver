@@ -2,8 +2,9 @@
 "use strict";
 
 (async function initializeAdminDashboard() {
-    const API_BASE_URL_URL = "http://127.0.0.1:5001";
-
+   const API_BASE_URL_URL = "https://engineeringai.onrender.com";
+   const API_BASE_URL = API_BASE_URL_URL;
+    
     const notice = document.getElementById("admin-notice");
     const usersBody = document.getElementById("users-table-body");
     const usersCount = document.getElementById("users-count");

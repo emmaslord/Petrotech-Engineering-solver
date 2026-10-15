@@ -175,7 +175,8 @@ async function loadConversationsFromCloud() {
         }
 
         const response = await fetch(
-            "http://127.0.0.1:5001/api/conversations",
+            "http://https://engineeringai.onrender.com
+4./api/conversations",
             {
                 method: "GET",
                 headers: {
@@ -356,8 +357,10 @@ async function saveConversationToCloud(conversation) {
             conversation.cloudId.length > 0;
 
         const url = isCloudConversation
-            ? `http://127.0.0.1:5001/api/conversations/${encodeURIComponent(conversation.cloudId)}`
-            : "http://127.0.0.1:5001/api/conversations";
+            ? `http://https://engineeringai.onrender.com
+4./api/conversations/${encodeURIComponent(conversation.cloudId)}`
+            : "http://https://engineeringai.onrender.com
+4./api/conversations";
 
         const response = await fetch(url, {
             method: isCloudConversation ? "PUT" : "POST",
@@ -615,7 +618,8 @@ waitingContent.textContent = "Thinking...";
         if (useStreaming) {
             // Stream general AI responses progressively.
             const response = await fetch(
-                "http://127.0.0.1:5001/api/assistant/stream",
+                "http://https://engineeringai.onrender.com
+4./api/assistant/stream",
                 {
                     method: "POST",
                     headers: {
@@ -713,7 +717,8 @@ waitingContent.textContent = "Thinking...";
         } else {
             // Preserve existing engineering calculation behavior.
             const response = await fetch(
-                "http://127.0.0.1:5001/api/assistant",
+                "http://https://engineeringai.onrender.com
+4./api/assistant",
                 {
                     method: "POST",
                     headers: {
@@ -987,7 +992,8 @@ async function uploadAttachments(files, question = "") {
     formData.append("question", question);
 
     const response = await fetch(
-        "http://127.0.0.1:5001/api/upload",
+        "http://https://engineeringai.onrender.com
+4./api/upload",
         {
             method: "POST",
             headers: {
@@ -1284,7 +1290,8 @@ const protectedElements = [
         }
 
         const configResponse = await fetch(
-            "http://127.0.0.1:5001/api/config"
+            "http://https://engineeringai.onrender.com
+4./api/config"
         );
 
         const config = await configResponse.json();
