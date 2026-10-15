@@ -3,3 +3,10 @@ groq
 pypdf
 easyocr
 numpy
+Flask
+Flask-Cors
+gunicorn
+supabase
+requests
+Pillow
+python-dotenv
