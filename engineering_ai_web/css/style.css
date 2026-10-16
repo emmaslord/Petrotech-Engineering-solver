@@ -958,3 +958,9 @@ a {
         animation-duration: 0.01ms !important;
     }
 }
+
+
+/* Ensure hidden elements stay hidden, including flex layouts */
+[hidden] {
+    display: none !important;
+}
