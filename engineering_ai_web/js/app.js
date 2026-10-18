@@ -228,7 +228,7 @@ function speakAssistantResponse(text) {
         return;
     }
 
-    const cleanText = String(text ?? "")
+    const cleanText = String(text || "")
         .replace(/```[\s\S]*?```/g, " Code block omitted. ")
         .replace(/https?:\/\/\S+/g, " link omitted ")
         .replace(/[`*_>#\[\]()]/g, " ");
@@ -1116,7 +1116,7 @@ speakAssistantResponse(answer);
             }
 
             if (window.marked && window.DOMPurify) {
-    const renderedMarkdown = window.marked.parse(String(answer ?? ""));
+    const renderedMarkdown = window.marked.parse(String(answer || ""));
     waitingContent.innerHTML =
         window.DOMPurify.sanitize(renderedMarkdown);
 
@@ -1126,7 +1126,7 @@ speakAssistantResponse(answer);
         });
     }
 } else {
-    waitingContent.textContent = String(answer ?? "");
+    waitingContent.textContent = String(answer || "");
 }
         }
 
