@@ -146,7 +146,7 @@ let soundEnabled = (() => {
 
 if (soundButton) {
     const updateSoundButton = () => {
-        soundButton.textContent = soundEnabled ? "ðŸ”Š" : "ðŸ”‡";
+        soundButton.textContent = soundEnabled ? "🔊" : "🔇";
 
         soundButton.setAttribute(
             "aria-pressed",
@@ -189,7 +189,7 @@ if (soundButton) {
 function updateSoundButton() {
     if (!soundButton) return;
 
-    soundButton.textContent = soundEnabled ? "ðŸ”Š" : "ðŸ”‡";
+    soundButton.textContent = soundEnabled ? "🔊" : "🔇";
     soundButton.title = soundEnabled
         ? "Turn off spoken responses"
         : "Turn on spoken responses";
@@ -347,7 +347,7 @@ function addMessage(role, text) {
     content.className = "message-content";
 
     if (role === "assistant" && window.marked && window.DOMPurify) {
-        const renderedMarkdown = window.marked.parse(String(text ?? ""));
+        const renderedMarkdown = window.marked.parse(String(text || ""));
 
         content.innerHTML = window.DOMPurify.sanitize(renderedMarkdown);
 
@@ -357,7 +357,7 @@ function addMessage(role, text) {
             });
         }
     } else {
-        content.textContent = String(text ?? "");
+        content.textContent = String(text || "");
     }
 
 message.append(label, content);
@@ -714,7 +714,7 @@ function renderChatHistory() {
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "history-delete";
-        deleteButton.textContent = "Ã—";
+        deleteButton.textContent = "×";
         deleteButton.title = "Delete this chat";
         deleteButton.setAttribute("aria-label", "Delete this chat");
 
@@ -949,7 +949,7 @@ waitingContent.textContent = "Thinking...";
             /\b(calculate|compute|determine|work out|solve|convert)\b/i;
 
         const hasEngineeringInputs =
-            /\d+(?:\.\d+)?\s*(?:ppg|psi|ft|feet|sg|Â°?\s*api)\b/i.test(question);
+            /\d+(?:\.\d+)?\s*(?:ppg|psi|ft|feet|sg|°?\s*api)\b/i.test(question);
 
         const useStreaming =
             !(calculatorTerms.test(question) &&
@@ -1096,7 +1096,7 @@ speakAssistantResponse(answer);
                     `Mud weight: ${result.mud_weight_ppg} ppg\n` +
                     `True vertical depth (TVD): ${result.tvd_ft} ft\n` +
                     `Calculated pressure: ${result.pressure_psi} psi\n\n` +
-                    `Formula: ${result.formula || "P = 0.052 Ã— MW Ã— TVD"}`;
+                    `Formula: ${result.formula || "P = 0.052 × MW × TVD"}`;
             } else if (
                 result.calculation === "API Gravity" &&
                 result.api_gravity !== undefined
@@ -1104,8 +1104,8 @@ speakAssistantResponse(answer);
                 answer =
                     `API GRAVITY\n\n` +
                     `Specific gravity: ${result.specific_gravity}\n` +
-                    `API gravity: ${result.api_gravity}Â° API\n` +
-                    `Formula: Â°API = (141.5 / SG) - 131.5`;
+                    `API gravity: ${result.api_gravity}° API\n` +
+                    `Formula: °API = (141.5 / SG) - 131.5`;
             } else if (result.pressure_psi !== undefined) {
                 answer =
                     `Hydrostatic pressure: ${result.pressure_psi} psi`;
@@ -1259,7 +1259,7 @@ function renderAttachments() {
             item.appendChild(thumbnail);
         } else {
             const icon = document.createElement("span");
-            icon.textContent = "ðŸ“„";
+            icon.textContent = "📄";
             item.appendChild(icon);
         }
 
@@ -1270,7 +1270,7 @@ function renderAttachments() {
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "attachment-remove";
-        remove.textContent = "Ã—";
+        remove.textContent = "×";
         remove.setAttribute("aria-label", `Remove ${file.name}`);
 
         remove.addEventListener("click", () => {
@@ -1722,15 +1722,37 @@ window.engineeringAIAuth = {
 
         if (error) throw error;
 
+            updateAuthUI(data.session);
         updateAuthUI(data.session);
 
-        if (data.session) {
-    void loadConversationsFromCloud();
-}
+        const restoreWelcomeName = (session) => {
+            let savedName = "";
 
+            try {
+                savedName =
+                    localStorage.getItem("engineeringAI_displayName")?.trim() || "";
+            } catch (error) {
+                console.warn("Could not read saved display name:", error);
+            }
+
+            const displayName =
+                session?.user?.user_metadata?.display_name?.trim() ||
+                savedName ||
+                session?.user?.email?.split("@")[0] ||
+                "";
+
+            updateWelcomeName(displayName);
+        };
+
+        restoreWelcomeName(data.session);
+
+        if (data.session) {
+            void loadConversationsFromCloud();
+        }
 
         authClient.auth.onAuthStateChange((_event, session) => {
             updateAuthUI(session);
+            restoreWelcomeName(session);
         });
 
 
