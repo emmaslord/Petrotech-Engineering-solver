@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#101828">
-    <meta name="description" content="Engineering AI — your intelligent engineering assistant.">
+    <meta name="description" content="Engineering AI â€” your intelligent engineering assistant.">
     <title>Engineering AI</title>
 
    <link
@@ -27,9 +27,9 @@
             aria-label="Toggle navigation"
             aria-controls="sidebar"
             aria-expanded="false"
-        >☰</button>
+        >â˜°</button>
 
-        
+
 <div class="brand">
     <img
         src="assets/engineering_ai_logo.png"
@@ -50,7 +50,7 @@
                 id="soundButton"
                 aria-label="Sound settings"
                 title="Sound settings"
-            >🔇</button>
+            >ðŸ”‡</button>
 
             <button
                 type="button"
@@ -58,15 +58,15 @@
                 id="newChatButton"
                 aria-label="Start a new chat"
                 title="New chat"
-            >＋</button>
+            >ï¼‹</button>
         </div>
     </header>
 
     <!-- Navigation and conversation history -->
-    
+
 <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
 
-    
+
     <aside class="sidebar" id="sidebar" hidden>
         <div class="sidebar-heading">
             <span class="sidebar-brand-mark">EA</span>
@@ -77,23 +77,23 @@
         </div>
 
         <button type="button" class="sidebar-link" data-action="new-chat">
-            <span aria-hidden="true">＋</span> New chat
+            <span aria-hidden="true">ï¼‹</span> New chat
         </button>
 
         <button type="button" class="sidebar-link" data-action="calculators">
-            <span aria-hidden="true">▦</span> Calculators
+            <span aria-hidden="true">â–¦</span> Calculators
         </button>
 
         <button type="button" class="sidebar-link" data-action="history">
-            <span aria-hidden="true">◷</span> Chat history
+            <span aria-hidden="true">â—·</span> Chat history
         </button>
 
         <button type="button" class="sidebar-link" data-action="settings">
-            <span aria-hidden="true">⚙</span> Settings
+            <span aria-hidden="true">âš™</span> Settings
         </button>
 
         <button type="button" class="sidebar-link" data-action="about">
-            <span aria-hidden="true">ⓘ</span> About
+            <span aria-hidden="true">â“˜</span> About
         </button>
 
         <section class="chat-history-section">
@@ -101,6 +101,48 @@
             <div id="chatHistoryList"></div>
         </section>
     </aside>
+
+
+<!-- Settings page -->
+<section id="settingsPage" class="settings-page" hidden>
+    <div class="settings-header">
+        <p class="eyebrow">PREFERENCES</p>
+        <h1>Settings</h1>
+        <p>Personalise your Engineering AI workspace.</p>
+    </div>
+
+    <div class="settings-section">
+        <h2>Appearance</h2>
+        <p>Choose the theme for your workspace.</p>
+
+        <label for="themeSelect">Colour theme</label>
+        <select id="themeSelect">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+        </select>
+    </div>
+
+    <div class="settings-section">
+        <h2>Profile</h2>
+        <p>Choose the name displayed in your workspace.</p>
+
+        <label for="usernameInput">Display name</label>
+        <input
+            type="text"
+            id="usernameInput"
+            placeholder="Enter your display name"
+            maxlength="40"
+        >
+
+        <button type="button" id="saveProfileButton">
+            Save profile
+        </button>
+
+        <p id="settingsMessage" role="status" aria-live="polite"></p>
+    </div>
+</section>
+
+
 
     <!-- Sign-in panel: stays outside the protected workspace -->
     <section
@@ -110,12 +152,12 @@
     >
         <div class="auth-brand-mark">EA</div>
         <p class="eyebrow">YOUR ENGINEERING WORKSPACE</p>
-        <h1 id="authTitle">Welcome to Engineering AI</h1>
-        <p class="auth-description">
-            Your intelligent assistant for engineering calculations,
-            technical research, and problem-solving.
-        </p>
 
+
+        <div class="auth-intro">
+    <h2>Welcome to Engineering AI</h2>
+    <p>Sign in to access your account, or create an account to get started.</p>
+</div>
         <form id="authForm">
             <label for="authEmail">Email address</label>
             <input
@@ -125,6 +167,21 @@
                 placeholder="you@example.com"
                 required
             >
+
+
+<label for="authDisplayName">Display name</label>
+<input
+    type="text"
+    id="authDisplayName"
+    autocomplete="nickname"
+    placeholder="e.g. Emmaskid"
+    maxlength="40"
+>
+
+
+
+
+
 
             <label for="authPassword">Password</label>
             <input
@@ -143,9 +200,72 @@
                 Create account
             </button>
 
+         <div class="auth-divider" aria-hidden="true">
+                  <span>OR</span>
+              </div>
+
+
+    <button type="button" id="googleSignInButton" class="auth-secondary">
+    Continue with Google
+     </button>
+
+
+
             <p id="authMessage" role="status" aria-live="polite"></p>
         </form>
     </section>
+
+
+
+        </form>
+
+        <!-- Separate Create Account screen -->
+        <form id="createAccountForm" hidden>
+            <h2>Create your account</h2>
+            <p>Join Engineering AI to get started.</p>
+
+            <label for="signupDisplayName">Display name</label>
+            <input
+                type="text"
+                id="signupDisplayName"
+                autocomplete="nickname"
+                placeholder="e.g. EmmasLord"
+                maxlength="40"
+                required
+            >
+
+            <label for="signupEmail">Email address</label>
+            <input
+                type="email"
+                id="signupEmail"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+            >
+
+            <label for="signupPassword">Password</label>
+            <input
+                type="password"
+                id="signupPassword"
+                autocomplete="new-password"
+                placeholder="At least 6 characters"
+                minlength="6"
+                required
+            >
+
+            <button type="submit" id="createAccountSubmit" class="auth-primary">
+                Create account
+            </button>
+
+            <button type="button" id="backToSignInButton" class="auth-secondary">
+                Back to sign in
+            </button>
+
+            <p id="signupMessage" role="status" aria-live="polite"></p>
+        </form>
+    </section>
+
+
 
     <!-- Signed-in account status -->
     <div id="accountBar" hidden>
@@ -157,7 +277,7 @@
     <!-- Main workspace -->
     <main class="main-content">
          <div id="chatView"></div>
-       
+
          <section class="workspace-heading">
             <p class="eyebrow">ENGINEERING INTELLIGENCE</p>
             <h1>Engineering, made clearer.</h1>
@@ -166,7 +286,7 @@
 
         <section class="welcome" id="welcome">
             <div class="assistant-logo" aria-hidden="true">EA</div>
-            <h2>What are we working on today?</h2>
+            <h2 id="welcomeHeading">What are we working on today?</h2>
             <p>
                 Start with a question or choose a suggested engineering topic.
             </p>
@@ -174,28 +294,28 @@
             <div class="suggestion-grid">
                 <button type="button" class="suggestion-card"
                     data-prompt="Explain hydrostatic pressure and its engineering applications.">
-                    <span class="suggestion-icon">◉</span>
+                    <span class="suggestion-icon">â—‰</span>
                     <strong>Pressure calculations</strong>
                     <small>Explore pressure, depth, and fluid properties</small>
                 </button>
 
                 <button type="button" class="suggestion-card"
                     data-prompt="Explain API gravity and show the formula with an example.">
-                    <span class="suggestion-icon">◈</span>
+                    <span class="suggestion-icon">â—ˆ</span>
                     <strong>Petroleum engineering</strong>
                     <small>Review oil properties and useful formulas</small>
                 </button>
 
                 <button type="button" class="suggestion-card"
                     data-prompt="Explain how to approach an engineering calculation step by step, including units and assumptions.">
-                    <span class="suggestion-icon">⌘</span>
+                    <span class="suggestion-icon">âŒ˜</span>
                     <strong>Engineering problems</strong>
                     <small>Work through a technical problem</small>
                 </button>
 
                 <button type="button" class="suggestion-card"
                     data-prompt="Explain a recent engineering technology development and identify reliable sources.">
-                    <span class="suggestion-icon">⌕</span>
+                    <span class="suggestion-icon">âŒ•</span>
                     <strong>Technical research</strong>
                     <small>Explore technologies and research topics</small>
                 </button>
@@ -362,13 +482,11 @@
 </section>
 
 
- 
+
 
 <!-- Message composer -->
 <footer class="composer-area">
     <form class="composer" id="chatForm">
-
-       <div class="input-container">
 
 <div class="input-container">
 
@@ -397,14 +515,14 @@
             class="mode-button active"
             id="thinkButton"
             aria-pressed="true"
-        >◉ Think</button>
+        >â—‰ Think</button>
 
         <button
             type="button"
             class="mode-button"
             id="searchButton"
             aria-pressed="false"
-        >⌕ Search</button>
+        >âŒ• Search</button>
 
         <button
             type="button"
@@ -412,7 +530,7 @@
             id="attachButton"
             aria-label="Attach a file"
             title="Attach a file"
-        >＋</button>
+        >ï¼‹</button>
 
         <button
             type="button"
@@ -420,14 +538,15 @@
             id="voiceButton"
             aria-label="Voice input"
             title="Voice input"
-        >🎙</button>
+        >ðŸŽ™</button>
 
-        <button
-            type="submit"
-            class="send-button"
-            id="sendButton"
-            aria-label="Send message"
-        >↑</button>
+<button
+    type="submit"
+    class="send-button"
+    id="sendButton"
+    aria-label="Send message"
+>â†‘</button>
+
     </div>
 
 </div>

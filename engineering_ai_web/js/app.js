@@ -1,5 +1,5 @@
 // ============================================
-// ENGINEERING AI — MAIN JAVASCRIPT
+// ENGINEERING AI â€” MAIN JAVASCRIPT
 // Chat, saved history, attachments and sidebar
 // ============================================
 
@@ -8,6 +8,8 @@ const input = document.getElementById("messageInput");
 const messages = document.getElementById("chatMessages");
 const welcome = document.getElementById("welcome");
 const sendButton = document.getElementById("sendButton");
+const soundButton = document.getElementById("soundButton");
+const voiceButton = document.getElementById("voiceButton");
 const statusMessage = document.getElementById("statusMessage");
 
 const thinkButton = document.getElementById("thinkButton");
@@ -32,6 +34,229 @@ const CHAT_STORAGE_KEY = "engineeringAI_conversations_v1";
 let conversations = [];
 let activeConversationId = null;
 let conversationHistory = [];
+
+
+
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+let voiceRecognition = null;
+let isVoiceRecording = false;
+
+function setVoiceStatus(message) {
+    if (statusMessage) {
+        statusMessage.textContent = message;
+    }
+}
+
+if (voiceButton) {
+    if (!SpeechRecognition) {
+        voiceButton.title =
+            "Voice input is not supported in this browser";
+        voiceButton.setAttribute(
+            "aria-label",
+            "Voice input is not supported"
+        );
+    } else {
+        voiceRecognition = new SpeechRecognition();
+        voiceRecognition.lang = "en-NG";
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true;
+
+        voiceRecognition.onstart = () => {
+            isVoiceRecording = true;
+            voiceButton.classList.add("recording");
+            voiceButton.setAttribute("aria-pressed", "true");
+            voiceButton.title = "Stop voice input";
+            setVoiceStatus("Listeningâ€¦ Speak now.");
+        };
+
+        voiceRecognition.onresult = (event) => {
+            let transcript = "";
+
+            for (
+                let i = 0;
+                i < event.results.length;
+                i++
+            ) {
+                transcript +=
+                    event.results[i][0].transcript + " ";
+            }
+
+            input.value = transcript.trim();
+            input.dispatchEvent(
+                new Event("input", { bubbles: true })
+            );
+        };
+
+        voiceRecognition.onerror = (event) => {
+            const messages = {
+                "not-allowed":
+                    "Microphone permission was denied. Check your browser settings.",
+                "no-speech":
+                    "No speech detected. Tap the microphone and try again.",
+                "audio-capture":
+                    "No microphone was detected. Check your microphone connection."
+            };
+
+            setVoiceStatus(
+                messages[event.error] ||
+                "Voice input stopped. Please try again."
+            );
+        };
+
+        voiceRecognition.onend = () => {
+            isVoiceRecording = false;
+            voiceButton.classList.remove("recording");
+            voiceButton.setAttribute("aria-pressed", "false");
+            voiceButton.title = "Voice input";
+        };
+
+        voiceButton.addEventListener("click", () => {
+            if (isVoiceRecording) {
+                voiceRecognition.stop();
+                setVoiceStatus("Finishing voice inputâ€¦");
+                return;
+            }
+
+            try {
+                voiceRecognition.start();
+            } catch (error) {
+                setVoiceStatus(
+                    "Could not start voice input. Please try again."
+                );
+            }
+        });
+    }
+}
+
+
+
+// Read-aloud settings for Engineering AI responses.
+let soundEnabled = (() => {
+    try {
+        return localStorage.getItem("engineeringAI_soundEnabled") !== "false";
+    } catch (error) {
+        return true;
+    }
+})();
+
+
+if (soundButton) {
+    const updateSoundButton = () => {
+        soundButton.textContent = soundEnabled ? "ðŸ”Š" : "ðŸ”‡";
+
+        soundButton.setAttribute(
+            "aria-pressed",
+            String(soundEnabled)
+        );
+
+        soundButton.setAttribute(
+            "aria-label",
+            soundEnabled ? "Turn speech off" : "Turn speech on"
+        );
+
+        soundButton.title = soundEnabled
+            ? "Turn speech off"
+            : "Turn speech on";
+    };
+
+    updateSoundButton();
+
+    soundButton.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    updateSoundButton();
+
+    try {
+        localStorage.setItem(
+            "engineeringAI_soundEnabled",
+            String(soundEnabled)
+        );
+    } catch (error) {
+        console.warn("Could not save sound preference:", error);
+    }
+
+    if (!soundEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+    }
+});
+    };
+
+
+
+function updateSoundButton() {
+    if (!soundButton) return;
+
+    soundButton.textContent = soundEnabled ? "ðŸ”Š" : "ðŸ”‡";
+    soundButton.title = soundEnabled
+        ? "Turn off spoken responses"
+        : "Turn on spoken responses";
+
+    soundButton.setAttribute(
+        "aria-label",
+        soundButton.title
+    );
+
+    soundButton.setAttribute(
+        "aria-pressed",
+        String(soundEnabled)
+    );
+}
+
+        if (!soundEnabled && "speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
+
+        updateSoundButton();
+
+
+    updateSoundButton();
+
+
+// Speak an Engineering AI response when sound is enabled.
+
+function speakAssistantResponse(text) {
+    if (!("speechSynthesis" in window)) {
+        console.warn("Speech output is not supported in this browser.");
+        return;
+    }
+
+    if (typeof soundEnabled !== "undefined" && !soundEnabled) {
+        console.log("Speech is disabled: soundEnabled is false.");
+        return;
+    }
+
+    const cleanText = String(text ?? "")
+        .replace(/```[\s\S]*?```/g, " Code block omitted. ")
+        .replace(/https?:\/\/\S+/g, " link omitted ")
+        .replace(/[`*_>#\[\]()]/g, " ");
+
+    if (!cleanText.trim()) return;
+
+    window.speechSynthesis.cancel();
+
+    const speech = new SpeechSynthesisUtterance(cleanText);
+   speech.lang = "en-NG";
+
+speech.onstart = () => {
+    console.log("Speech started successfully.");
+};
+
+speech.onend = () => {
+    console.log("Speech finished.");
+};
+
+speech.onerror = (event) => {
+    console.error("Speech error:", event.error);
+};
+
+window.speechSynthesis.speak(speech);
+}
+
+
+
 
 // ============================================
 // LOAD SAVED CONVERSATIONS
@@ -135,29 +360,84 @@ function addMessage(role, text) {
         content.textContent = String(text ?? "");
     }
 
-    message.append(label, content);
-    messages.appendChild(message);
+message.append(label, content);
+messages.appendChild(message);
 
-    return message;
+if (role === "assistant") {
+    console.log("Assistant speech triggered:", text);
+    speakAssistantResponse(text);
+}
+
+return message;
 }
 
 // ============================================
 // SAVE CONVERSATIONS
 // ============================================
 
+
 function saveConversations() {
-    try {
-        localStorage.setItem(
-            CHAT_STORAGE_KEY,
-            JSON.stringify(conversations)
-        );
-    } catch (error) {
-        console.error("Could not save chat history:", error);
-        alert(
-            "Chat history could not be saved. " +
-            "Check your browser storage."
-        );
+    if (!Array.isArray(conversations)) {
+        console.error("Cannot save: conversations is not an array.");
+        return;
     }
+
+    const newestFirst = [...conversations].sort((a, b) => {
+        const timeA = Date.parse(a.updatedAt || "") || 0;
+        const timeB = Date.parse(b.updatedAt || "") || 0;
+        return timeB - timeA;
+    });
+
+    const cacheOptions = [
+        { chats: 10, messages: 20, content: 4000 },
+        { chats: 5, messages: 10, content: 2000 },
+        { chats: 3, messages: 5, content: 1000 },
+        { chats: 1, messages: 3, content: 500 }
+    ];
+
+    for (const option of cacheOptions) {
+        try {
+            const cache = newestFirst
+                .slice(0, option.chats)
+                .map(conversation => ({
+                    ...conversation,
+                    messages: (Array.isArray(conversation.messages)
+                        ? conversation.messages
+                        : []
+                    )
+                        .slice(-option.messages)
+                        .map(message => ({
+                            ...message,
+                            content: String(message.content || "")
+                                .slice(-option.content)
+                        }))
+                }));
+
+            localStorage.setItem(
+                CHAT_STORAGE_KEY,
+                JSON.stringify(cache)
+            );
+
+            console.log(
+                "Local chat cache saved:",
+                cache.length,
+                "conversation(s)."
+            );
+            return;
+        } catch (error) {
+            if (
+                error.name !== "QuotaExceededError" &&
+                error.name !== "NS_ERROR_DOM_QUOTA_REACHED"
+            ) {
+                console.error("Local cache save failed:", error);
+                return;
+            }
+        }
+    }
+
+    console.error(
+        "Local cache is full. Cloud conversations were not deleted."
+    );
 }
 
 async function loadConversationsFromCloud() {
@@ -313,7 +593,7 @@ function saveCurrentMessages() {
         const title = firstUserMessage.content;
         conversation.title =
             title.slice(0, 45) +
-            (title.length > 45 ? "…" : "");
+            (title.length > 45 ? "â€¦" : "");
     }
 
     conversation.updatedAt = new Date().toISOString();
@@ -322,7 +602,7 @@ function saveCurrentMessages() {
         (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
     );
 
-    
+
     saveConversations();
     renderChatHistory();
 
@@ -333,10 +613,10 @@ function saveCurrentMessages() {
 
 async function saveConversationToCloud(conversation) {
     try {
-       
-       
+
+
        console.log("DEBUG: saveConversationToCloud started", conversation);
-       
+
         if (!conversation || !window.engineeringAIAuth) {
             return;
         }
@@ -434,7 +714,7 @@ function renderChatHistory() {
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "history-delete";
-        deleteButton.textContent = "×";
+        deleteButton.textContent = "Ã—";
         deleteButton.title = "Delete this chat";
         deleteButton.setAttribute("aria-label", "Delete this chat");
 
@@ -508,11 +788,77 @@ function deleteConversation(id) {
         welcome.hidden = false;
     }
 
-   saveConversations();
+    saveConversations();
+    renderChatHistory();
+}
+function saveConversations() {
+    if (!Array.isArray(conversations)) {
+        console.error("Cannot save history: conversations is not an array.");
+        return;
+    }
+
+    // Keep the full conversations in memory.
+    // Only a smaller cache is written to browser storage.
+    const newestFirst = [...conversations].sort(
+        (a, b) =>
+            Date.parse(b.updatedAt || 0) -
+            Date.parse(a.updatedAt || 0)
+    );
+
+    const cacheOptions = [
+        { chats: 10, messages: 20, content: 4000 },
+        { chats: 5, messages: 10, content: 2000 },
+        { chats: 3, messages: 5, content: 1000 },
+        { chats: 1, messages: 3, content: 500 }
+    ];
+
+    for (const option of cacheOptions) {
+        try {
+            const cache = newestFirst
+                .slice(0, option.chats)
+                .map(conversation => ({
+                    ...conversation,
+                    messages: (conversation.messages || [])
+                        .slice(-option.messages)
+                        .map(message => ({
+                            ...message,
+                            content: String(message.content || "")
+                                .slice(-option.content)
+                        }))
+                }));
+
+            localStorage.setItem(
+                CHAT_STORAGE_KEY,
+                JSON.stringify(cache)
+            );
+
+            if (option.chats < 10) {
+                console.warn(
+                    "Browser storage was limited. A smaller local cache was saved."
+                );
+            }
+
+            return;
+        } catch (error) {
+            if (
+                error.name !== "QuotaExceededError" &&
+                error.name !== "NS_ERROR_DOM_QUOTA_REACHED" &&
+                error.name !== "SecurityError"
+            ) {
+                console.error("Could not save local chat cache:", error);
+                return;
+            }
+        }
+    }
+
+    console.error(
+        "Could not save the local chat cache. " +
+        "Existing browser data was left untouched."
+    );
+}
+
 renderChatHistory();
 
-
-}
 
 // ============================================
 // SEND A MESSAGE TO THE FLASK API
@@ -549,7 +895,7 @@ form.addEventListener("submit", async event => {
         .slice(0, -1)
         .map(({ role, content }) => ({ role, content }));
 
-    
+
 console.log("DEBUG: saveCurrentMessages ENTERED");
 
 saveCurrentMessages();
@@ -603,7 +949,7 @@ waitingContent.textContent = "Thinking...";
             /\b(calculate|compute|determine|work out|solve|convert)\b/i;
 
         const hasEngineeringInputs =
-            /\d+(?:\.\d+)?\s*(?:ppg|psi|ft|feet|sg|°?\s*api)\b/i.test(question);
+            /\d+(?:\.\d+)?\s*(?:ppg|psi|ft|feet|sg|Â°?\s*api)\b/i.test(question);
 
         const useStreaming =
             !(calculatorTerms.test(question) &&
@@ -700,16 +1046,18 @@ waitingContent.textContent = "Thinking...";
                     "The assistant returned an empty response."
                 );
             }
-        
+
+speakAssistantResponse(answer);
+
         if (window.hljs) {
     waitingContent.querySelectorAll("pre code").forEach(codeBlock => {
         window.hljs.highlightElement(codeBlock);
     });
 }
-        
-        
-        
-        
+
+
+
+
         } else {
             // Preserve existing engineering calculation behavior.
             const response = await fetch(
@@ -748,7 +1096,7 @@ waitingContent.textContent = "Thinking...";
                     `Mud weight: ${result.mud_weight_ppg} ppg\n` +
                     `True vertical depth (TVD): ${result.tvd_ft} ft\n` +
                     `Calculated pressure: ${result.pressure_psi} psi\n\n` +
-                    `Formula: ${result.formula || "P = 0.052 × MW × TVD"}`;
+                    `Formula: ${result.formula || "P = 0.052 Ã— MW Ã— TVD"}`;
             } else if (
                 result.calculation === "API Gravity" &&
                 result.api_gravity !== undefined
@@ -756,8 +1104,8 @@ waitingContent.textContent = "Thinking...";
                 answer =
                     `API GRAVITY\n\n` +
                     `Specific gravity: ${result.specific_gravity}\n` +
-                    `API gravity: ${result.api_gravity}° API\n` +
-                    `Formula: °API = (141.5 / SG) - 131.5`;
+                    `API gravity: ${result.api_gravity}Â° API\n` +
+                    `Formula: Â°API = (141.5 / SG) - 131.5`;
             } else if (result.pressure_psi !== undefined) {
                 answer =
                     `Hydrostatic pressure: ${result.pressure_psi} psi`;
@@ -911,7 +1259,7 @@ function renderAttachments() {
             item.appendChild(thumbnail);
         } else {
             const icon = document.createElement("span");
-            icon.textContent = "📄";
+            icon.textContent = "ðŸ“„";
             item.appendChild(icon);
         }
 
@@ -922,7 +1270,7 @@ function renderAttachments() {
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "attachment-remove";
-        remove.textContent = "×";
+        remove.textContent = "Ã—";
         remove.setAttribute("aria-label", `Remove ${file.name}`);
 
         remove.addEventListener("click", () => {
@@ -1023,7 +1371,7 @@ if (documentInput) {
 
 
  // ============================================
- // SIDEBAR TOGGLE — MOBILE-FRIENDLY
+ // SIDEBAR TOGGLE â€” MOBILE-FRIENDLY
  // ============================================
 
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
@@ -1086,13 +1434,15 @@ if (menuButton && sidebar) {
 }
 
 
- 
+
  // ============================================
  // ENGINEERING AI PAGE NAVIGATION
  // ============================================
 
 const chatView = document.getElementById("chatView");
 const aboutPage = document.getElementById("aboutPage");
+const settingsPage = document.getElementById("settingsPage");
+
 
 function closeNavigationSidebar() {
     if (sidebar) {
@@ -1109,24 +1459,48 @@ function closeNavigationSidebar() {
     }
 }
 
+
+
 function showEngineeringAIView(view) {
-    if (!chatView || !aboutPage) return;
-
+    const mainContent = document.querySelector(".main-content");
+    const aboutPage = document.getElementById("aboutPage");
+    const welcome = document.getElementById("welcome");
+    const workspaceHeading = document.querySelector(".workspace-heading");
+    const chatMessages = document.getElementById("chatMessages");
+    const statusMessage = document.getElementById("statusMessage");
+    const composerArea = document.querySelector(".composer-area");
     const showAbout = view === "about";
+    const showSettings = view === "settings";
 
-    chatView.hidden = showAbout;
-    aboutPage.hidden = !showAbout;
+   const showChat = view === "chat";
+const showCalculators = view === "calculators";
+const showWorkspace = showChat || showCalculators;
+const showWelcome = showChat && conversationHistory.length === 0;
+
+
+if (mainContent) mainContent.hidden = !showWorkspace;
+if (aboutPage) aboutPage.hidden = !showAbout;
+if (settingsPage) settingsPage.hidden = !showSettings;
+if (welcome) welcome.hidden = !showWelcome;
+if (workspaceHeading) workspaceHeading.hidden = !showChat;
+if (chatMessages) chatMessages.hidden = !showChat;
+if (statusMessage) statusMessage.hidden = !showWorkspace;
+if (composerArea) composerArea.hidden = !showChat;
+    document.body.classList.toggle("about-view", showAbout);
 
     closeNavigationSidebar();
 }
 
-// ABOUT
+
+ // ABOUT
 document.querySelectorAll('[data-action="about"]').forEach(link => {
     link.addEventListener("click", event => {
         event.preventDefault();
         showEngineeringAIView("about");
     });
 });
+
+
 
 // NEW CHAT
 document.querySelectorAll('[data-action="new-chat"]').forEach(link => {
@@ -1143,32 +1517,11 @@ document.querySelectorAll('[data-action="calculators"]').forEach(link => {
     link.addEventListener("click", event => {
         event.preventDefault();
 
-        closeNavigationSidebar();
+        showEngineeringAIView("calculators");
 
         if (statusMessage) {
             statusMessage.textContent =
-                "Engineering calculators are available through the chat. " +
-                "Ask a calculation question to get started.";
-        }
-
-        input.focus();
-    });
-});
-
-// CHAT HISTORY
-document.querySelectorAll('[data-action="history"]').forEach(link => {
-    link.addEventListener("click", event => {
-        event.preventDefault();
-
-        closeNavigationSidebar();
-
-        const historyList = document.getElementById("chatHistoryList");
-
-        if (historyList) {
-            historyList.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest"
-            });
+                "Engineering calculators are available through the chat. Ask a calculation question to get started.";
         }
     });
 });
@@ -1177,13 +1530,7 @@ document.querySelectorAll('[data-action="history"]').forEach(link => {
 document.querySelectorAll('[data-action="settings"]').forEach(link => {
     link.addEventListener("click", event => {
         event.preventDefault();
-
-        closeNavigationSidebar();
-
-        if (statusMessage) {
-            statusMessage.textContent =
-                "Settings panel is not available yet.";
-        }
+        showEngineeringAIView("settings");
     });
 });
 
@@ -1200,14 +1547,26 @@ renderChatHistory();
 
 
 /* ==========================================
-   ENGINEERING AI — SUPABASE AUTHENTICATION
+   ENGINEERING AI â€” SUPABASE AUTHENTICATION
    Add this block at the end of app.js
    ========================================== */
 
 (async function initializeEngineeringAIAuth() {
     const authPanel = document.getElementById("authPanel");
     const authForm = document.getElementById("authForm");
+
+    const createAccountForm =
+    document.getElementById("createAccountForm");
+
+const backToSignInButton =
+    document.getElementById("backToSignInButton");
+
+const signupMessage =
+    document.getElementById("signupMessage");
+
+
     const authEmail = document.getElementById("authEmail");
+    const authDisplayName = document.getElementById("authDisplayName");
     const authPassword = document.getElementById("authPassword");
     const authMessage = document.getElementById("authMessage");
     const signInButton = document.getElementById("signInButton");
@@ -1215,9 +1574,10 @@ renderChatHistory();
     const accountBar = document.getElementById("accountBar");
     const accountEmail = document.getElementById("accountEmail");
     const signOutButton = document.getElementById("signOutButton");
+    const googleSignInButton = document.getElementById("googleSignInButton");
 
     if (
-        !authPanel || !authForm || !authEmail ||
+        !authPanel || !authForm || !authEmail || !authDisplayName ||
         !authPassword || !authMessage || !signInButton ||
         !signUpButton || !accountBar || !accountEmail ||
         !signOutButton
@@ -1228,7 +1588,7 @@ renderChatHistory();
         return;
     }
 
-   
+
 const protectedElements = [
     document.querySelector(".topbar"),
     document.querySelector(".main-content"),
@@ -1252,28 +1612,58 @@ const protectedElements = [
         signInButton.disabled = value;
         signUpButton.disabled = value;
         signOutButton.disabled = value;
+        if (googleSignInButton) googleSignInButton.disabled = value;
     }
 
-    function updateAuthUI(session) {
-        currentSession = session;
 
-        const signedIn = Boolean(session?.user);
+function updateAuthUI(session) {
+    currentSession = session;
 
-        authPanel.hidden = signedIn;
-        accountBar.hidden = !signedIn;
+    const signedIn = Boolean(session?.user);
+    const mainContent = document.querySelector(".main-content");
+    const aboutPage = document.getElementById("aboutPage");
+    const composerArea = document.querySelector(".composer-area");
 
-        protectedElements.forEach(element => {
-            element.hidden = !signedIn;
-        });
+    authPanel.hidden = signedIn;
+    accountBar.hidden = !signedIn;
 
-        accountEmail.textContent =
-            signedIn ? session.user.email || "Signed in" : "";
+    protectedElements.forEach(element => {
+        element.hidden = !signedIn;
+    });
 
-        if (!signedIn) {
-            showMessage("");
-            authPassword.value = "";
-        }
+    // Keep the workspace and its welcome screen hidden until sign-in.
+    if (mainContent) {
+        mainContent.hidden = !signedIn;
     }
+
+    if (!signedIn) {
+        if (aboutPage) aboutPage.hidden = true;
+        if (composerArea) composerArea.hidden = true;
+    }
+
+
+const savedDisplayName = (() => {
+    try {
+        return localStorage.getItem("engineeringAI_displayName")?.trim() || "";
+    } catch (error) {
+        return "";
+    }
+})();
+
+const accountDisplayName =
+    session?.user?.user_metadata?.display_name?.trim() ||
+    savedDisplayName;
+
+              accountEmail.textContent = signedIn
+    ? accountDisplayName || session.user.email || "Signed in"
+    : "";
+
+          if (!signedIn) {
+    showMessage("");
+    authPassword.value = "";
+              }
+
+}
 
     try {
         if (!window.supabase?.createClient) {
@@ -1306,7 +1696,7 @@ const protectedElements = [
         );
 
 
-        
+
 window.engineeringAIAuth = {
     async getAccessToken() {
         if (!authClient) {
@@ -1337,124 +1727,325 @@ window.engineeringAIAuth = {
         if (data.session) {
     void loadConversationsFromCloud();
 }
-        
-        
+
+
         authClient.auth.onAuthStateChange((_event, session) => {
             updateAuthUI(session);
         });
 
-        authForm.addEventListener("submit", async event => {
-            event.preventDefault();
 
-            if (busy) return;
+if (signOutButton) {
+    signOutButton.addEventListener("click", async () => {
+        if (busy || !authClient) return;
 
-            setBusy(true);
-            showMessage("Signing in...");
+        setBusy(true);
+        showMessage("Signing out...");
 
-            try {
-                const { data, error } =
-                    await authClient.auth.signInWithPassword({
-                        email: authEmail.value.trim(),
-                        password: authPassword.value
-                    });
+        try {
+            const { error } = await authClient.auth.signOut();
 
-                if (error) throw error;
+            if (error) throw error;
 
-                updateAuthUI(data.session);
-                showMessage("Sign-in successful.");
-            } catch (error) {
-                showMessage(
-                    error.message || "Sign-in failed.",
-                    true
-                );
-            } finally {
-                setBusy(false);
-            }
-        });
-
-        signUpButton.addEventListener("click", async () => {
-            if (busy) return;
-
-            const email = authEmail.value.trim();
-            const password = authPassword.value;
-
-            if (!email || !authEmail.checkValidity()) {
-                showMessage("Enter a valid email address.", true);
-                authEmail.focus();
-                return;
-            }
-
-            if (password.length < 6) {
-                showMessage(
-                    "Enter a password with at least 6 characters.",
-                    true
-                );
-                authPassword.focus();
-                return;
-            }
-
-            setBusy(true);
-            showMessage("Creating your account...");
-
-            try {
-                const { data, error } =
-                    await authClient.auth.signUp({
-                        email,
-                        password
-                    });
-
-                if (error) throw error;
-
-                if (data.session) {
-                    updateAuthUI(data.session);
-                    showMessage("Account created and signed in.");
-                } else {
-                    showMessage(
-                        "Account created. Check your email for " +
-                        "a confirmation link, then sign in."
-                    );
-                }
-            } catch (error) {
-                showMessage(
-                    error.message || "Account creation failed.",
-                    true
-                );
-            } finally {
-                setBusy(false);
-            }
-        });
-
-        signOutButton.addEventListener("click", async () => {
-            if (busy) return;
-
-            setBusy(true);
+            updateAuthUI(null);
             showMessage("");
+            console.log("Signed out successfully.");
+        } catch (error) {
+            showMessage(
+                error.message || "Sign out failed. Please try again.",
+                true
+            );
+        } finally {
+            setBusy(false);
+        }
+    });
+}
 
-            try {
-                const { error } = await authClient.auth.signOut();
 
-                if (error) throw error;
 
-                updateAuthUI(null);
-                showMessage("You have signed out.");
-            } catch (error) {
-                showMessage(
-                    error.message || "Sign-out failed.",
-                    true
-                );
-            } finally {
-                setBusy(false);
+if (googleSignInButton) {
+    googleSignInButton.addEventListener("click", async () => {
+        if (busy) return;
+
+        setBusy(true);
+        showMessage("Connecting to Google...");
+
+        try {
+            const { error } = await authClient.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                    redirectTo: window.location.origin + window.location.pathname
+                }
+            });
+
+            if (error) throw error;
+        } catch (error) {
+            showMessage(
+                error.message || "Google sign-in failed.",
+                true
+            );
+            setBusy(false);
+        }
+    });
+}
+
+if (createAccountForm) {
+    createAccountForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (busy) return;
+
+        const displayName =
+            document.getElementById("signupDisplayName").value.trim();
+        const email =
+            document.getElementById("signupEmail").value.trim();
+        const password =
+            document.getElementById("signupPassword").value;
+
+        if (!displayName) {
+            signupMessage.textContent = "Please enter a display name.";
+            return;
+        }
+
+        if (password.length < 6) {
+            signupMessage.textContent =
+                "Your password must contain at least 6 characters.";
+            return;
+        }
+
+        setBusy(true);
+        signupMessage.textContent = "Creating your account...";
+
+        try {
+            const { data, error } = await authClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        display_name: displayName
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            localStorage.setItem("engineeringAI_displayName", displayName);
+
+            if (data.session) {
+                updateAuthUI(data.session);
+                updateWelcomeName(displayName);
+                signupMessage.textContent = "Account created successfully.";
+            } else {
+                signupMessage.textContent =
+                    "Account created. Check your email to confirm your account.";
             }
-        });
+        } catch (error) {
+            signupMessage.textContent =
+                error.message || "Account creation failed.";
+        } finally {
+            setBusy(false);
+        }
+    });
+}
+
+// Sign-in form handler
+if (signInButton) {
+    signInButton.addEventListener("click", async () => {
+        if (busy) return;
+
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        const displayName = authDisplayName
+            ? authDisplayName.value.trim()
+            : "";
+
+        if (!email || !authEmail.checkValidity()) {
+            showMessage("Enter a valid email address.", true);
+            authEmail.focus();
+            return;
+        }
+
+        if (password.length < 6) {
+            showMessage(
+                "Enter a password with at least 6 characters.",
+                true
+            );
+            authPassword.focus();
+            return;
+        }
+
+        setBusy(true);
+        showMessage("Signing in...");
+
+        try {
+            const { data, error } = await authClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            if (displayName) {
+                try {
+                    localStorage.setItem("engineeringAI_displayName", displayName);
+                } catch (storageError) {
+                    console.warn("Could not save display name locally:", storageError);
+                }
+            }
+
+            updateAuthUI(data.session);
+            updateWelcomeName(
+                displayName ||
+                data.user?.user_metadata?.display_name ||
+                data.user?.email?.split("@")[0] ||
+                "there"
+            );
+
+            showMessage("Signed in successfully.");
+            void loadConversationsFromCloud();
+        } catch (error) {
+            showMessage(
+                error.message || "Sign in failed. Please check your details.",
+                true
+            );
+        } finally {
+            setBusy(false);
+        }
+    });
+}
 
     } catch (error) {
-        console.error("Authentication initialization failed:", error);
-        authPanel.hidden = false;
-
         showMessage(
-            "Authentication could not start. Check that Flask is " +
-            "running and /api/config is working, then refresh.",
+            error.message || "Authentication initialization failed.",
             true
         );
+    }
+})();
+
+
+
+/* ===== Sign In / Create Account Screens ===== */
+
+const showSignInScreen = () => {
+    authForm.hidden = false;
+    createAccountForm.hidden = true;
+
+    showMessage("");
+    if (signupMessage) signupMessage.textContent = "";
+};
+
+const showCreateAccountScreen = () => {
+    authForm.hidden = true;
+    createAccountForm.hidden = false;
+
+    showMessage("");
+    if (signupMessage) signupMessage.textContent = "";
+};
+
+// Existing Create Account button opens the separate registration screen.
+if (signUpButton) {
+    signUpButton.addEventListener("click", showCreateAccountScreen);
+}
+
+// Return to the sign-in screen.
+if (backToSignInButton) {
+    backToSignInButton.addEventListener("click", showSignInScreen);
+}
+
+
+
+/* ===== Personalized Welcome ===== */
+
+function updateWelcomeName(displayName) {
+    const welcomeHeading = document.getElementById("welcomeHeading");
+
+    if (!welcomeHeading) return;
+
+    const name = displayName.trim();
+
+    welcomeHeading.textContent = name
+        ? `Welcome, ${name}! What are we working on today?`
+        : "What are we working on today?";
+}
+
+// Restore the saved display name when the page loads.
+try {
+    const savedName =
+        localStorage.getItem("engineeringAI_displayName") || "";
+
+    updateWelcomeName(savedName);
+} catch (error) {
+    updateWelcomeName("");
+}
+
+
+
+/* ===== Engineering AI Settings ===== */
+
+(function initializeEngineeringAISettings() {
+    const themeSelect = document.getElementById("themeSelect");
+    const usernameInput = document.getElementById("usernameInput");
+    const saveProfileButton = document.getElementById("saveProfileButton");
+    const settingsMessage = document.getElementById("settingsMessage");
+
+    const THEME_KEY = "engineeringAI_theme";
+    const PROFILE_KEY = "engineeringAI_displayName";
+
+    // Apply the selected theme.
+    function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+    }
+
+    // Load saved settings.
+    try {
+        applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+        const savedName = localStorage.getItem(PROFILE_KEY) || "";
+
+        if (usernameInput) {
+            usernameInput.value = savedName;
+        }
+    } catch (error) {
+        applyTheme("light");
+    }
+
+    // Change theme immediately when the selection changes.
+    if (themeSelect) {
+        themeSelect.addEventListener("change", () => {
+            applyTheme(themeSelect.value);
+        });
+    }
+
+    // Save the display name.
+    if (saveProfileButton) {
+        saveProfileButton.addEventListener("click", () => {
+            const displayName = usernameInput
+                ? usernameInput.value.trim()
+                : "";
+
+            if (!displayName) {
+                if (settingsMessage) {
+                    settingsMessage.textContent =
+                        "Please enter a display name first.";
+                }
+                return;
+            }
+
+            try {
+                localStorage.setItem(PROFILE_KEY, displayName);
+
+                if (settingsMessage) {
+                    settingsMessage.textContent =
+                        "Profile saved successfully.";
+                }
+
+                updateWelcomeName(displayName);
+
+            } catch (error) {
+                if (settingsMessage) {
+                    settingsMessage.textContent =
+                        "Could not save settings in this browser.";
+                }
+            }
+        });
     }
 })();
