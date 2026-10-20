@@ -25,7 +25,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_api.admin_routes import admin_routes
+from flask_api.analytics_routes import analytics_routes
 from flask_api.authentication import require_auth
 from flask_api.cloud_conversations import cloud_conversations
 from flask_api.cloud_database import SUPABASE_KEY, SUPABASE_URL
@@ -43,6 +48,15 @@ from pypdf import PdfReader
 
 app = Flask(__name__)
 
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
+
 # Up to five 5 MB files, plus multipart/form-data overhead.
 app.config["MAX_CONTENT_LENGTH"] = 26 * 1024 * 1024
 
@@ -57,6 +71,13 @@ ALLOWED_ORIGINS = {
 
 app.register_blueprint(cloud_conversations)
 app.register_blueprint(admin_routes)
+app.register_blueprint(analytics_routes)
+
+app.view_functions["analytics_routes.record_analytics_event"] = (
+    limiter.limit("30 per minute")(
+        app.view_functions["analytics_routes.record_analytics_event"]
+    )
+)
 
 
 @lru_cache(maxsize=1)
@@ -355,6 +376,36 @@ def assistant_endpoint():
             "error": "The assistant could not process this request.",
         }), 500
 
+
+
+@app.post("/api/search")
+def web_search_endpoint():
+    data = get_request_data()
+    query = data.get("query", "")
+
+    if not isinstance(query, str) or not query.strip():
+        return jsonify({
+            "success": False,
+            "error": "Please provide a search query.",
+        }), 400
+
+    try:
+        from flask_api.web_search import search_web
+
+        result = search_web(query.strip(), max_results=3)
+
+        return jsonify({
+            "success": True,
+            "query": result["query"],
+            "sources": result["results"],
+        })
+
+    except Exception:
+        app.logger.exception("Web search request failed")
+        return jsonify({
+            "success": False,
+            "error": "Web search is temporarily unavailable.",
+        }), 502
 
 @app.post("/api/assistant/stream")
 def assistant_stream_endpoint():

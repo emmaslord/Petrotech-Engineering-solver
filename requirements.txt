@@ -10,3 +10,5 @@ supabase
 requests
 Pillow
 python-dotenv
+Flask-Limiter
+tavily-python
