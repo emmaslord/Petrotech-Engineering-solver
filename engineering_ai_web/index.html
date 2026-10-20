@@ -215,10 +215,6 @@
         </form>
     </section>
 
-
-
-        </form>
-
         <!-- Separate Create Account screen -->
         <form id="createAccountForm" hidden>
             <h2>Create your account</h2>
@@ -336,8 +332,6 @@
 
 
 </div>
-
-
 
 <section id="aboutPage" class="about-page" hidden>
     <div class="about-hero">
@@ -481,33 +475,29 @@
     </p>
 </section>
 
-
-
-
 <!-- Message composer -->
 <footer class="composer-area">
     <form class="composer" id="chatForm">
 
 <div class="input-container">
-
-    <div class="ai-mode-container">
-        <label class="ai-mode-label" for="aiModeSelect">
-            AI Mode
-        </label>
-
-        <select id="aiModeSelect" name="aiMode">
-            <option value="general_engineering">General Engineering</option>
-            <option value="petroleum_engineering">Petroleum Engineering</option>
-            <option value="coding">Coding</option>
-            <option value="research">Research</option>
-        </select>
-    </div>
-
     <textarea
         id="messageInput"
         placeholder="Ask an engineering question..."
         rows="1"
     ></textarea>
+
+<div class="ai-mode-container">
+    <label class="ai-mode-label" for="aiModeSelect">
+        Mode
+    </label>
+
+    <select id="aiModeSelect" name="aiMode">
+        <option value="general_engineering">General Engineering</option>
+        <option value="petroleum_engineering">Petroleum Engineering</option>
+        <option value="coding">Coding</option>
+        <option value="research">Research</option>
+    </select>
+</div>
 
     <div class="input-actions">
         <button

@@ -3,6 +3,8 @@
 // Chat, saved history, attachments and sidebar
 // ============================================
 
+const CHAT_STORAGE_KEY = "engineeringAI_conversations_v1";
+
 const form = document.getElementById("chatForm");
 const input = document.getElementById("messageInput");
 const messages = document.getElementById("chatMessages");
@@ -29,14 +31,138 @@ const documentInput = document.getElementById("documentInput");
 let selectedMode = "think";
 let selectedAttachments = [];
 
-const CHAT_STORAGE_KEY = "engineeringAI_conversations_v1";
+
+function resizeMessageInput() {
+    if (!input) return;
+
+    input.style.height = "auto";
+
+    const maxHeight = 200;
+    const newHeight = Math.min(input.scrollHeight, maxHeight);
+
+    input.style.height = `${newHeight}px`;
+    input.style.overflowY =
+        input.scrollHeight > maxHeight ? "auto" : "hidden";
+}
+
+if (input) {
+    input.addEventListener("input", resizeMessageInput);
+    resizeMessageInput();
+}
+
+
+if (input && form) {
+    input.addEventListener("keydown", event => {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey &&
+            !event.isComposing
+        ) {
+            event.preventDefault();
+            form.requestSubmit();
+        }
+    });
+}
+
+
+
+const ANALYTICS_SESSION_KEY = "engineeringAI_analytics_session_v1";
+
+function getAnalyticsSessionId() {
+    try {
+        let sessionId = sessionStorage.getItem(
+            ANALYTICS_SESSION_KEY
+        );
+
+        if (!sessionId) {
+            sessionId = crypto.randomUUID();
+
+            sessionStorage.setItem(
+                ANALYTICS_SESSION_KEY,
+                sessionId
+            );
+        }
+
+        return sessionId;
+    } catch (error) {
+        console.warn(
+            "Analytics session unavailable:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+
+function getAnalyticsDeviceType() {
+    const width = window.innerWidth;
+
+    if (width < 768) {
+        return "mobile";
+    }
+
+    if (width < 1024) {
+        return "tablet";
+    }
+
+    return "desktop";
+}
+async function trackAnalyticsEvent(eventName) {
+    const sessionId = getAnalyticsSessionId();
+
+    if (!sessionId) {
+        return;
+    }
+
+    const allowedEvents = [
+        "page_view",
+        "session_start",
+        "feature_used"
+    ];
+
+    if (!allowedEvents.includes(eventName)) {
+        return;
+    }
+
+    try {
+        await fetch("http://127.0.0.1:5001/api/analytics/event", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                event_name: eventName,
+                session_id: sessionId,
+                page_path: window.location.pathname,
+                device_type: getAnalyticsDeviceType()
+            }),
+            keepalive: true
+        });
+    } catch (error) {
+        // Analytics must never interrupt chat functionality.
+        console.warn("Analytics event could not be sent.");
+    }
+}
+function startAnalyticsTracking() {
+    void trackAnalyticsEvent("session_start");
+    void trackAnalyticsEvent("page_view");
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener(
+        "DOMContentLoaded",
+        startAnalyticsTracking,
+        { once: true }
+    );
+} else {
+    startAnalyticsTracking();
+}
 
 let conversations = [];
 let activeConversationId = null;
 let conversationHistory = [];
-
-
-
 
 const SpeechRecognition =
     window.SpeechRecognition ||
@@ -958,8 +1084,87 @@ waitingContent.textContent = "Thinking...";
 
         let answer = "";
 
-        if (useStreaming) {
-            // Stream general AI responses progressively.
+        
+if (selectedMode === "search") {
+    // Search the web and display clickable source links.
+    if (!question.trim()) {
+        throw new Error(
+            "Enter a search query before using Search mode."
+        );
+    }
+
+    const response = await fetch(
+        "https://engineeringai.onrender.com/api/search",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                query: question.trim()
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.error || "Web search failed."
+        );
+    }
+
+    const sources = Array.isArray(result.sources)
+        ? result.sources
+        : [];
+
+    const sourceLines = sources.map((source, index) => {
+        let url;
+
+        try {
+            url = new URL(source.url);
+        } catch {
+            return null;
+        }
+
+        if (
+            url.protocol !== "https:" &&
+            url.protocol !== "http:"
+        ) {
+            return null;
+        }
+
+        const title = String(
+            source.title || "Untitled source"
+        ).replace(/[\[\]]/g, "\\$&");
+
+        const snippet = String(
+            source.snippet || ""
+        ).replace(/\s+/g, " ").trim();
+
+        return (
+            `${index + 1}. [${title}](<${url.href}>)` +
+            (snippet ? `\n   ${snippet}` : "")
+        );
+    }).filter(Boolean);
+
+    answer = sourceLines.length
+        ? `## Web search results\n\n` +
+          `**Query:** ${question.trim()}\n\n` +
+          sourceLines.join("\n\n")
+        : `No usable web results were found for "${question.trim()}".`;
+
+    if (window.marked && window.DOMPurify) {
+        const renderedMarkdown = window.marked.parse(answer);
+
+        waitingContent.innerHTML =
+            window.DOMPurify.sanitize(renderedMarkdown);
+    } else {
+        waitingContent.textContent = answer;
+    }
+
+} else if (useStreaming) {
+    // Keep your existing streaming code directly below this line.
             const response = await fetch(
                 "https://engineeringai.onrender.com/api/assistant/stream",
                 {
