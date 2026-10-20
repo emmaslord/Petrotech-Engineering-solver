@@ -5,6 +5,9 @@ from flask import Blueprint, jsonify, g
 from supabase import create_client
 
 from flask_api.cloud_database import SUPABASE_URL
+from flask import g
+from flask_api.authentication import require_auth
+from flask_api.admin_auth import require_admin
 from flask_api.activity_logger import log_system_activity
 from flask_api.authentication import require_auth
 from flask_api.admin_auth import require_admin

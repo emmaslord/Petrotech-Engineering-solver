@@ -84,6 +84,12 @@
             <span aria-hidden="true">▦</span> Calculators
         </button>
 
+
+        <button type="button" class="sidebar-link" data-action="workflow">
+            <span aria-hidden="true">⇄</span> Workflow
+        </button>
+
+
         <button type="button" class="sidebar-link" data-action="history">
             <span aria-hidden="true">◷</span> Chat history
         </button>
@@ -318,6 +324,33 @@
             </div>
         </section>
 
+
+<!-- Engineering Calculators -->
+<section id="calculatorsPanel" class="calculators-panel" hidden>
+    <h2>Engineering Calculators</h2>
+    <p>Select a calculator, enter your values, and calculate.</p>
+
+    <label for="calculatorSelect">Choose calculator</label>
+    <select id="calculatorSelect">
+        <option value="reynolds-number">Reynolds Number</option>
+        <option value="pipe-pressure-drop">Pipe Pressure Drop</option>
+        <option value="ohms-law">Ohm's Law</option>
+        <option value="electrical-power">Electrical Power</option>
+        <option value="mechanical-stress">Mechanical Stress</option>
+        <option value="beam-bending-stress">Beam Bending Stress</option>
+        <option value="density-specific-weight">Density &amp; Specific Weight</option>
+    </select>
+
+    <form id="calculatorForm">
+        <div id="calculatorInputs"></div>
+        <button type="submit" id="calculateButton">Calculate</button>
+    </form>
+
+    <div id="calculatorResult" role="status" aria-live="polite"></div>
+</section>
+
+
+
         <!-- Existing conversation messages -->
         <section
             class="chat-messages"
@@ -467,6 +500,18 @@
         </div>
     </div>
 
+
+    <div class="about-section terms-section">
+        <h2>Legal information</h2>
+        <p>
+            Learn about the terms that apply when using Engineering AI.
+            <a href="#" id="termsLink">
+                Read our Terms &amp; Conditions
+            </a>
+        </p>
+    </div>
+
+
     <p class="about-note">
         Engineering AI is a product of Excellent Intelligence.
         It supports technical learning and preliminary analysis and
@@ -475,11 +520,201 @@
     </p>
 </section>
 
+
+<section id="termsPage" class="about-page terms-page" hidden>
+    <p class="terms-back-link">
+        <a href="#" data-action="about">
+            ← Back to About
+        </a>
+    </p>
+
+
+    <div class="about-section">
+        <h1>Terms &amp; Conditions</h1>
+        <p>Last updated: October 2026</p>
+
+        <h2>1. Using Engineering AI</h2>
+        <p>
+            By using Engineering AI, you agree to these terms.
+            If you do not agree, please stop using the service.
+        </p>
+
+        <h2>2. Purpose of the service</h2>
+        <p>
+            Engineering AI provides AI-assisted engineering
+            explanations, calculations, learning resources, and
+            preliminary technical analysis.
+        </p>
+
+        <h2>3. Accuracy and engineering safety</h2>
+        <p>
+            AI responses and calculations can contain errors.
+            Always verify inputs, units, formulas, assumptions,
+            results, and applicable standards.
+        </p>
+        <p>
+            Do not use Engineering AI as the sole basis for
+            safety-critical decisions, engineering designs, or
+            industrial operations. Obtain appropriate verification
+            and qualified professional review.
+        </p>
+
+        <h2>4. Acceptable use</h2>
+        <p>
+            Use the service lawfully and responsibly. Do not attempt
+            to disrupt the platform, bypass its security, or access
+            another user's account or information without permission.
+        </p>
+
+        <h2>5. Accounts and information</h2>
+        <p>
+            Protect your account credentials and only submit
+            information you are authorised to share. Avoid submitting
+            passwords, confidential business information, or sensitive
+            technical data.
+        </p>
+
+        <h2>6. Intellectual property</h2>
+        <p>
+            Respect the intellectual property rights associated with
+            Engineering AI, its branding, platform design, and
+            third-party materials.
+        </p>
+
+        <h2>7. Availability and changes</h2>
+        <p>
+            Features may change or become temporarily unavailable.
+            We do not guarantee uninterrupted service or error-free
+            AI outputs.
+        </p>
+
+        <h2>8. Limitations</h2>
+        <p>
+            Engineering AI is provided for educational assistance
+            and preliminary analysis. To the extent permitted by
+            applicable law, outputs are not guaranteed to be accurate
+            or suitable for a particular purpose. These terms do not
+            exclude rights or liabilities that cannot legally be
+            excluded.
+        </p>
+
+        <h2>9. Updates to these terms</h2>
+        <p>
+            These terms may be updated as the platform develops.
+            The updated date will be revised when changes are made.
+        </p>
+
+        <h2>10. Contact</h2>
+        <p>
+            Questions about these terms can be sent to
+            <a href="mailto:excellentintel@gmail.com">
+                excellentintel@gmail.com
+            </a>.
+        </p>
+    </div>
+</section>
+
+
+<section id="workflowPage" class="about-page workflow-page" hidden>
+    <div class="about-hero">
+        <p class="eyebrow">ENGINEERING PRODUCTIVITY</p>
+        <h1>Engineering Workflows</h1>
+        <p>
+            Organise engineering calculations into structured
+            steps, follow guided processes, and build toward
+            more advanced engineering workflows.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Guided Workflows</h2>
+        <p>
+            Follow structured, step-by-step engineering processes
+            with clear inputs, calculation methods, units,
+            assumptions, and results.
+        </p>
+
+
+<div class="workflow-options">
+    <button type="button"
+            class="sidebar-link workflow-template-button"
+            id="generalWorkflowButton">
+        <span aria-hidden="true">⚙</span>
+        <span>
+            <strong>General Engineering Workflow</strong>
+            <small>
+                Step-by-step guidance, inputs, calculations,
+                assumptions, and results
+            </small>
+        </span>
+        <span aria-hidden="true">→</span>
+    </button>
+</div>
+
+
+<div class="workflow-template-library">
+    <h3>Engineering Template Library</h3>
+    <p>Choose a discipline to explore a guided engineering task.</p>
+
+    <div class="workflow-template-grid">
+        <button type="button" class="workflow-template-card"
+                data-template="hydrostatic-pressure">
+            <span aria-hidden="true">🛢️</span>
+            <strong>Hydrostatic Pressure</strong>
+            <small>Petroleum Engineering · Pressure and fluid density</small>
+        </button>
+
+        <button type="button" class="workflow-template-card"
+                data-template="mud-weight">
+            <span aria-hidden="true">🧪</span>
+            <strong>Required Mud Weight</strong>
+            <small>Petroleum Engineering · Well control calculations</small>
+        </button>
+
+        <button type="button" class="workflow-template-card"
+                data-template="fluid-flow">
+            <span aria-hidden="true">🌊</span>
+            <strong>Fluid Flow</strong>
+            <small>General Engineering · Velocity and flow rate</small>
+        </button>
+
+        <button type="button" class="workflow-template-card"
+                data-template="ohms-law">
+            <span aria-hidden="true">⚡</span>
+            <strong>Ohm’s Law</strong>
+            <small>Electrical Engineering · Voltage, current and resistance</small>
+        </button>
+    </div>
+</div>
+
+
+
+        <p class="workflow-description">
+            Explore guided tasks across mechanical, electrical,
+            civil, chemical, petroleum, and other engineering
+            disciplines.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Visual Builder</h2>
+        <p>
+            Create custom workflows by connecting engineering
+            calculation blocks and linking outputs to later steps.
+        </p>
+        <span class="workflow-coming-soon">Coming Soon</span>
+    </div>
+</section>
+
+
+
 <!-- Message composer -->
 <footer class="composer-area">
     <form class="composer" id="chatForm">
 
 <div class="input-container">
+        <div id="attachmentPreview" class="attachment-preview" hidden></div>
+
     <textarea
         id="messageInput"
         placeholder="Ask an engineering question..."
@@ -563,7 +798,6 @@
             <button type="button" id="documentOption">Attach a document</button>
         </div>
 
-        <div id="attachmentPreview" class="attachment-preview" hidden></div>
     </form>
 
     <p class="composer-footer">

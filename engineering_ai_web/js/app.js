@@ -461,7 +461,96 @@ input.addEventListener("input", () => {
 // ============================================
 
 
-function addMessage(role, text) {
+function formatEngineeringWorkflowResult(result) {
+    if (!result || typeof result !== "object") {
+        return "";
+    }
+
+    const isVerifiedCalculation =
+        result.source === "verified_engineering_tool";
+
+    const hasCalculationData =
+        result.pressure_psi !== undefined ||
+        result.api_gravity !== undefined;
+
+    if (!isVerifiedCalculation || !hasCalculationData) {
+        return "";
+    }
+
+    const escapeHtml = value =>
+        String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+
+    const sections = [];
+
+    if (result.pressure_psi !== undefined) {
+        sections.push({
+            title: "Inputs and units",
+            body:
+                `Mud weight: ${escapeHtml(result.mud_weight_ppg)} ppg\n` +
+                `True vertical depth: ${escapeHtml(result.tvd_ft)} ft`
+        });
+        sections.push({
+            title: "Formula used",
+            body: escapeHtml(
+                result.formula || "P = 0.052 × mud weight × TVD"
+            )
+        });
+        sections.push({
+            title: "Step-by-step calculation",
+            body:
+                `${escapeHtml(result.formula || "P = 0.052 × MW × TVD")}\n` +
+                `Substitute the provided values and calculate pressure.`
+        });
+        sections.push({
+            title: "Final answer",
+            body: `${escapeHtml(result.pressure_psi)} psi`
+        });
+    } else {
+        sections.push({
+            title: "Inputs and units",
+            body: `Specific gravity: ${escapeHtml(result.specific_gravity)}`
+        });
+        sections.push({
+            title: "Formula used",
+            body: "°API = (141.5 / specific gravity) − 131.5"
+        });
+        sections.push({
+            title: "Step-by-step calculation",
+            body: "Substitute the specific gravity into the formula."
+        });
+        sections.push({
+            title: "Final answer",
+            body: `${escapeHtml(result.api_gravity)}° API`
+        });
+    }
+
+    sections.push({
+        title: "Assumptions and limitations",
+        body: "Confirm the input units and assumptions. Treat this as a preliminary engineering calculation, not a substitute for qualified engineering review."
+    });
+
+    return `
+        <section class="engineering-result-panel">
+            <h3>Engineering Calculation Results</h3>
+            ${sections.map(section => `
+                <article class="engineering-result-section">
+                    <h4>${escapeHtml(section.title)}</h4>
+                    <p>${escapeHtml(section.body).replace(/\n/g, "<br>")}</p>
+                </article>
+            `).join("")}
+        </section>
+    `;
+}
+
+
+
+function addMessage(role, text, attachments = []) {
     const message = document.createElement("article");
     message.className = `chat-message ${role}`;
 
@@ -485,6 +574,39 @@ function addMessage(role, text) {
     } else {
         content.textContent = String(text || "");
     }
+
+// Display attached images and documents inside the chat message.
+if (role === "user" && attachments.length > 0) {
+    const attachmentList = document.createElement("div");
+    attachmentList.className = "message-attachments";
+
+    attachments.forEach(file => {
+        const card = document.createElement("div");
+        card.className = "message-attachment-card";
+
+        if (file.type && file.type.startsWith("image/")) {
+            const image = document.createElement("img");
+            image.className = "message-attachment-image";
+            image.alt = file.name || "Attached image";
+            image.src = URL.createObjectURL(file);
+            card.appendChild(image);
+        } else {
+            const fileIcon = document.createElement("span");
+            fileIcon.className = "message-attachment-icon";
+            fileIcon.textContent = "📄";
+            card.appendChild(fileIcon);
+
+            const fileName = document.createElement("span");
+            fileName.className = "message-attachment-name";
+            fileName.textContent = file.name;
+            card.appendChild(fileName);
+        }
+
+        attachmentList.appendChild(card);
+    });
+
+    message.appendChild(attachmentList);
+}
 
 message.append(label, content);
 messages.appendChild(message);
@@ -1003,13 +1125,20 @@ form.addEventListener("submit", async event => {
         createConversation();
     }
 
-    const userMessage = {
-        role: "user",
-        content: question || "Attached file(s)"
-    };
+const messageAttachments = [...selectedAttachments];
 
-    conversationHistory.push(userMessage);
-    addMessage("user", userMessage.content);
+const userMessage = {
+    role: "user",
+    content: question || "Attached file(s)",
+    attachments: messageAttachments.map(file => ({
+        name: file.name,
+        type: file.type,
+        file
+    }))
+};
+
+conversationHistory.push(userMessage);
+addMessage("user", userMessage.content, messageAttachments);
 
     input.value = "";
     input.style.height = "auto";
@@ -1034,26 +1163,67 @@ waitingContent.textContent = "Thinking...";
     let effectiveQuestion = question;
 
     try {
-        // Upload and extract any attached files before asking the AI.
+
+        // Process attachments while preserving the existing upload flow.
+        let imageAnalysisAnswer = "";
+
         if (selectedAttachments.length > 0) {
             if (statusMessage) {
                 statusMessage.textContent = "Reading your attachments...";
             }
 
-            const uploadResult = await uploadAttachments(
-                [...selectedAttachments],
-                question
-            );
+            const attachments = [...selectedAttachments];
 
-            const extractedText = uploadResult.combined_text || "";
+            const supportedImageExtensions = new Set([
+                "png", "jpg", "jpeg", "webp"
+            ]);
 
-            effectiveQuestion =
-                `${question || "Please analyze the attached files."}\n\n` +
-                `Extracted attachment text:\n${extractedText}`;
+            const isImageOnly = attachments.every(file => {
+                const extension = file.name
+                    .split(".")
+                    .pop()
+                    .toLowerCase();
 
-            const filenames = uploadResult.files
+                return supportedImageExtensions.has(extension);
+            });
+
+            let filenames = attachments
                 .map(file => file.name)
                 .join(", ");
+
+            if (isImageOnly) {
+                if (statusMessage) {
+                    statusMessage.textContent =
+                        "Analyzing your engineering image(s)...";
+                }
+
+                const imageResult = await analyzeImageAttachments(
+                    attachments,
+                    question
+                );
+
+                imageAnalysisAnswer = imageResult.answer || "";
+
+                if (!imageAnalysisAnswer.trim()) {
+                    throw new Error(
+                        "Image analysis returned an empty answer."
+                    );
+                }
+
+                effectiveQuestion =
+                    question || "Please analyze the attached images.";
+            } else {
+                const uploadResult = await uploadAttachments(
+                    attachments,
+                    question
+                );
+
+                const extractedText = uploadResult.combined_text || "";
+
+                effectiveQuestion =
+                    `${question || "Please analyze the attached files."}\n\n` +
+                    `Extracted attachment text:\n${extractedText}`;
+            }
 
             userMessage.content =
                 `${question ? question + "\n" : ""}Attached files: ${filenames}`;
@@ -1084,8 +1254,34 @@ waitingContent.textContent = "Thinking...";
 
         let answer = "";
 
-        
-if (selectedMode === "search") {
+
+
+if (imageAnalysisAnswer) {
+    answer = imageAnalysisAnswer;
+
+    if (window.marked && window.DOMPurify) {
+        const renderedMarkdown = window.marked.parse(
+            String(answer)
+        );
+
+        waitingContent.innerHTML =
+            window.DOMPurify.sanitize(renderedMarkdown);
+
+        if (window.hljs) {
+            waitingContent.querySelectorAll("pre code").forEach(
+                codeBlock => {
+                    window.hljs.highlightElement(codeBlock);
+                }
+            );
+        }
+    } else {
+        waitingContent.textContent = String(answer);
+    }
+
+    speakAssistantResponse(answer);
+
+} else if (selectedMode === "search") {
+
     // Search the web and display clickable source links.
     if (!question.trim()) {
         throw new Error(
@@ -1320,19 +1516,24 @@ speakAssistantResponse(answer);
                 answer = JSON.stringify(result, null, 2);
             }
 
-            if (window.marked && window.DOMPurify) {
-    const renderedMarkdown = window.marked.parse(String(answer || ""));
-    waitingContent.innerHTML =
-        window.DOMPurify.sanitize(renderedMarkdown);
+            const workflowResultHtml = formatEngineeringWorkflowResult(result);
 
-    if (window.hljs) {
-        waitingContent.querySelectorAll("pre code").forEach(codeBlock => {
-            window.hljs.highlightElement(codeBlock);
-        });
-    }
-} else {
-    waitingContent.textContent = String(answer || "");
-}
+            if (workflowResultHtml && window.DOMPurify) {
+                waitingContent.innerHTML =
+                    window.DOMPurify.sanitize(workflowResultHtml);
+            } else if (window.marked && window.DOMPurify) {
+                const renderedMarkdown = window.marked.parse(String(answer || ""));
+                waitingContent.innerHTML =
+                    window.DOMPurify.sanitize(renderedMarkdown);
+
+                if (window.hljs) {
+                    waitingContent.querySelectorAll("pre code").forEach(codeBlock => {
+                        window.hljs.highlightElement(codeBlock);
+                    });
+                }
+            } else {
+                waitingContent.textContent = String(answer || "");
+            }
         }
 
         // Preserve the existing conversation and cloud-save workflow.
@@ -1562,6 +1763,56 @@ async function uploadAttachments(files, question = "") {
 }
 
 
+async function analyzeImageAttachments(files, question) {
+    const token = await window.engineeringAIAuth?.getAccessToken?.();
+
+    if (!token) {
+        throw new Error("Please sign in before analyzing images.");
+    }
+
+    if (!question.trim()) {
+        throw new Error(
+            "Please enter a question about the attached image."
+        );
+    }
+
+    if (files.length < 1 || files.length > 3) {
+        throw new Error(
+            "Image analysis supports one to three images at a time."
+        );
+    }
+
+    const formData = new FormData();
+
+    for (const file of files) {
+        formData.append("files", file);
+    }
+
+    formData.append("question", question);
+
+    const response = await fetch(
+        "https://engineeringai.onrender.com/api/analyze-image",
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+        throw new Error(
+            data.error || "Image analysis failed."
+        );
+    }
+
+    return data;
+}
+
+
 if (imageInput) {
     imageInput.addEventListener("change", handleSelectedFiles);
 }
@@ -1646,6 +1897,8 @@ if (menuButton && sidebar) {
 
 const chatView = document.getElementById("chatView");
 const aboutPage = document.getElementById("aboutPage");
+const workflowPage = document.getElementById("workflowPage");
+const termsPage = document.getElementById("termsPage");
 const settingsPage = document.getElementById("settingsPage");
 
 
@@ -1671,12 +1924,14 @@ function showEngineeringAIView(view) {
     const aboutPage = document.getElementById("aboutPage");
     const welcome = document.getElementById("welcome");
     const workspaceHeading = document.querySelector(".workspace-heading");
+    const calculatorsPanel = document.getElementById("calculatorsPanel");
     const chatMessages = document.getElementById("chatMessages");
     const statusMessage = document.getElementById("statusMessage");
     const composerArea = document.querySelector(".composer-area");
     const showAbout = view === "about";
     const showSettings = view === "settings";
-
+    const showTerms = view === "terms";
+    const showWorkflow = view === "workflow";
    const showChat = view === "chat";
 const showCalculators = view === "calculators";
 const showWorkspace = showChat || showCalculators;
@@ -1686,9 +1941,12 @@ const showWelcome = showChat && conversationHistory.length === 0;
 if (mainContent) mainContent.hidden = !showWorkspace;
 if (aboutPage) aboutPage.hidden = !showAbout;
 if (settingsPage) settingsPage.hidden = !showSettings;
+if (termsPage) termsPage.hidden = !showTerms;
+if (workflowPage) workflowPage.hidden = !showWorkflow;
 if (welcome) welcome.hidden = !showWelcome;
 if (workspaceHeading) workspaceHeading.hidden = !showChat;
 if (chatMessages) chatMessages.hidden = !showChat;
+if (calculatorsPanel) calculatorsPanel.hidden = !showCalculators;
 if (statusMessage) statusMessage.hidden = !showWorkspace;
 if (composerArea) composerArea.hidden = !showChat;
     document.body.classList.toggle("about-view", showAbout);
@@ -1706,6 +1964,16 @@ document.querySelectorAll('[data-action="about"]').forEach(link => {
 });
 
 
+// TERMS & CONDITIONS
+const termsLink = document.getElementById("termsLink");
+
+if (termsLink) {
+    termsLink.addEventListener("click", event => {
+        event.preventDefault();
+        showEngineeringAIView("terms");
+    });
+}
+
 
 // NEW CHAT
 document.querySelectorAll('[data-action="new-chat"]').forEach(link => {
@@ -1721,15 +1989,79 @@ document.querySelectorAll('[data-action="new-chat"]').forEach(link => {
 document.querySelectorAll('[data-action="calculators"]').forEach(link => {
     link.addEventListener("click", event => {
         event.preventDefault();
-
         showEngineeringAIView("calculators");
-
-        if (statusMessage) {
-            statusMessage.textContent =
-                "Engineering calculators are available through the chat. Ask a calculation question to get started.";
-        }
+        initializeCalculatorForm();
     });
 });
+
+
+// WORKFLOW
+document.querySelectorAll('[data-action="workflow"]').forEach(link => {
+    link.addEventListener("click", event => {
+        event.preventDefault();
+        showEngineeringAIView("workflow");
+    });
+});
+
+
+const generalWorkflowButton = document.getElementById("generalWorkflowButton");
+
+if (generalWorkflowButton) {
+    generalWorkflowButton.addEventListener("click", () => {
+        const question =
+            "Guide me through a General Engineering Workflow step by step. " +
+            "First identify the engineering discipline and problem, then " +
+            "collect inputs and units, state assumptions, select the " +
+            "appropriate method or formula, calculate where possible, " +
+            "check the result, and explain limitations and safety considerations. " +
+            "Ask me for the problem details before starting.";
+
+        showEngineeringAIView("chat");
+        const input = document.getElementById("messageInput");
+        if (input) {
+            input.value = question;
+            input.focus();
+        }
+    });
+}
+
+
+document.querySelectorAll(".workflow-template-card").forEach(card => {
+    card.addEventListener("click", () => {
+        const templates = {
+            "hydrostatic-pressure": {
+                title: "Petroleum Engineering — Hydrostatic Pressure",
+                prompt: "Guide me through a hydrostatic pressure calculation. Ask for fluid density or mud weight and true vertical depth, confirm units, state assumptions, show the formula, calculate with units, and check the result."
+            },
+            "mud-weight": {
+                title: "Petroleum Engineering — Required Mud Weight",
+                prompt: "Guide me through a required mud weight calculation. Ask for the relevant formation pressure or pressure gradient and true vertical depth, confirm units and assumptions, explain the applicable formula, and check the result. Clarify any missing information before calculating."
+            },
+            "fluid-flow": {
+                title: "General Engineering — Fluid Flow",
+                prompt: "Guide me through a fluid flow calculation. First clarify whether I need flow rate, cross-sectional area, or average velocity. Ask for the required values and units, explain the applicable relationship, calculate where possible, and check the result."
+            },
+            "ohms-law": {
+                title: "Electrical Engineering — Ohm's Law",
+                prompt: "Guide me through an Ohm's law calculation. Ask which values are known among voltage, current, and resistance, confirm units, explain V = I × R, calculate the missing value where sufficient information is available, and check the result."
+            }
+        };
+
+        const template = templates[card.dataset.template];
+        if (!template) return;
+
+        const input = document.getElementById("messageInput");
+        if (!input) {
+            console.error("Engineering AI message input was not found.");
+            return;
+        }
+
+        showEngineeringAIView("chat");
+        input.value = template.prompt;
+        input.focus();
+    });
+});
+
 
 // SETTINGS
 document.querySelectorAll('[data-action="settings"]').forEach(link => {
@@ -1741,6 +2073,232 @@ document.querySelectorAll('[data-action="settings"]').forEach(link => {
 
 // Keep the existing chat visible when the app starts.
 showEngineeringAIView("chat");
+
+
+
+
+/* ============================================
+   ENGINEERING CALCULATOR CONTROLLER
+   ============================================ */
+
+const calculatorDefinitions = {
+    "reynolds-number": {
+        fields: [
+            ["density", "Fluid density", "kg/m³"],
+            ["velocity", "Flow velocity", "m/s"],
+            ["diameter", "Pipe internal diameter", "m"],
+            ["dynamic_viscosity", "Dynamic viscosity", "Pa·s"]
+        ],
+        formula: "Re = ρvD / μ",
+        unit: "Dimensionless"
+    },
+    "pipe-pressure-drop": {
+        fields: [
+            ["friction_factor", "Darcy friction factor", "Dimensionless"],
+            ["length", "Pipe length", "m"],
+            ["diameter", "Pipe internal diameter", "m"],
+            ["density", "Fluid density", "kg/m³"],
+            ["velocity", "Flow velocity", "m/s"]
+        ],
+        formula: "ΔP = f(L/D)(ρv²/2)",
+        unit: "Pa"
+    },
+    "ohms-law": {
+        fields: [
+            ["voltage", "Voltage", "V"],
+            ["current", "Current", "A"],
+            ["resistance", "Resistance", "Ω"]
+        ],
+        formula: "V = IR",
+        unit: "Enter exactly two known values."
+    },
+    "electrical-power": {
+        fields: [
+            ["voltage", "Voltage", "V"],
+            ["current", "Current", "A"]
+        ],
+        formula: "P = VI",
+        unit: "W"
+    },
+    "mechanical-stress": {
+        fields: [
+            ["force", "Axial force", "N"],
+            ["area", "Cross-sectional area", "m²"]
+        ],
+        formula: "σ = F/A",
+        unit: "Pa"
+    },
+    "beam-bending-stress": {
+        fields: [
+            ["moment", "Bending moment", "N·m"],
+            ["distance", "Distance from neutral axis", "m"],
+            ["second_moment", "Second moment of area", "m⁴"]
+        ],
+        formula: "σ = Mc/I",
+        unit: "Pa"
+    },
+    "density-specific-weight": {
+        fields: [
+            ["mass", "Mass", "kg"],
+            ["volume", "Volume", "m³"],
+            ["gravity", "Gravitational acceleration (optional)", "m/s²"]
+        ],
+        formula: "ρ = m/V; γ = ρg",
+        unit: "kg/m³ and N/m³"
+    }
+};
+
+function initializeCalculatorForm() {
+    const select = document.getElementById("calculatorSelect");
+    const inputs = document.getElementById("calculatorInputs");
+    const form = document.getElementById("calculatorForm");
+    const result = document.getElementById("calculatorResult");
+
+    if (!select || !inputs || !form || !result) return;
+
+    function renderFields() {
+        const definition = calculatorDefinitions[select.value];
+        if (!definition) return;
+
+        inputs.replaceChildren();
+
+        definition.fields.forEach(([name, label, unit]) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "calculator-field";
+
+            const fieldLabel = document.createElement("label");
+            fieldLabel.htmlFor = `calc-${name}`;
+            fieldLabel.textContent = `${label} (${unit})`;
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.id = `calc-${name}`;
+            input.name = name;
+            input.step = "any";
+            input.autocomplete = "off";
+
+            if (select.value === "ohms-law" ||
+                (select.value === "density-specific-weight" &&
+                 name === "gravity")) {
+                input.required = false;
+            } else {
+                input.required = true;
+            }
+
+            if (select.value === "ohms-law") {
+                input.placeholder = "Leave blank if unknown";
+            }
+
+            wrapper.append(fieldLabel, input);
+            inputs.appendChild(wrapper);
+        });
+
+        const formula = document.createElement("p");
+        formula.className = "calculator-formula";
+        formula.textContent = `Formula: ${definition.formula}`;
+        inputs.appendChild(formula);
+
+        result.textContent = "";
+    }
+
+    if (select.dataset.calculatorReady !== "true") {
+        select.addEventListener("change", renderFields);
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const definition = calculatorDefinitions[select.value];
+            const payload = {};
+
+            for (const [name] of definition.fields) {
+                const input = document.getElementById(`calc-${name}`);
+                const raw = input.value.trim();
+
+                if (raw === "") {
+                    payload[name] = null;
+                } else {
+                    const value = Number(raw);
+
+                    if (!Number.isFinite(value)) {
+                        result.textContent = `Enter a valid number for ${name}.`;
+                        return;
+                    }
+
+                    payload[name] = value;
+                }
+            }
+
+            if (select.value === "ohms-law") {
+                const known = Object.values(payload)
+                    .filter(value => value !== null).length;
+
+                if (known !== 2) {
+                    result.textContent =
+                        "Enter exactly two values and leave the third blank.";
+                    return;
+                }
+            }
+
+            const button = document.getElementById("calculateButton");
+            button.disabled = true;
+            result.textContent = "Calculating…";
+
+            const isLocal = ["localhost", "127.0.0.1"]
+                .includes(window.location.hostname);
+
+            const apiBase = isLocal
+                ? "http://127.0.0.1:5001"
+                : "https://engineeringai.onrender.com";
+
+            try {
+                const response = await fetch(
+                    `${apiBase}/api/calculations/${select.value}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || "Calculation failed.");
+                }
+
+                result.replaceChildren();
+
+                const heading = document.createElement("h3");
+                heading.textContent = "Calculation result";
+                result.appendChild(heading);
+
+                if (typeof data.result === "object" && data.result !== null) {
+                    Object.entries(data.result).forEach(([key, value]) => {
+                        const line = document.createElement("p");
+                        line.textContent =
+                            `${key.replaceAll("_", " ")}: ${value}`;
+                        result.appendChild(line);
+                    });
+                } else {
+                    const line = document.createElement("p");
+                    line.textContent = `${data.result} ${definition.unit}`;
+                    result.appendChild(line);
+                }
+            } catch (error) {
+                result.textContent = error.message ||
+                    "Could not reach the calculator API.";
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        select.dataset.calculatorReady = "true";
+    }
+
+    renderFields();
+}
 
 
 
@@ -1827,6 +2385,10 @@ function updateAuthUI(session) {
     const signedIn = Boolean(session?.user);
     const mainContent = document.querySelector(".main-content");
     const aboutPage = document.getElementById("aboutPage");
+    const termsPage = document.getElementById("termsPage");
+const settingsPage = document.getElementById("settingsPage");
+const workflowPage = document.getElementById("workflowPage");
+
     const composerArea = document.querySelector(".composer-area");
 
     authPanel.hidden = signedIn;

@@ -275,3 +275,81 @@ def _stream_ollama(question: str, system_prompt: str):
 
     if not received_content:
         raise RuntimeError("The local model returned an empty response.")
+
+
+def analyze_images(
+    question: str,
+    image_data_urls: list[str],
+) -> str:
+    """Analyze up to three images with Groq's vision-capable model."""
+    from groq import Groq
+
+    question = question.strip()
+
+    if not question:
+        raise ValueError("Please enter a question about the images.")
+
+    if not image_data_urls or len(image_data_urls) > 3:
+        raise ValueError("Provide between one and three images.")
+
+    api_key = get_groq_api_key()
+
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is not configured. "
+            "Check your .streamlit/secrets.toml file."
+        )
+
+    content = [
+        {
+            "type": "text",
+            "text": (
+                "Analyze the supplied image or images for the user. "
+                "Explain visible engineering components, diagrams, "
+                "labels, and relationships where possible. "
+                "Distinguish visible evidence from assumptions. "
+                "If details are unclear, say so instead of guessing. "
+                "For safety-critical engineering questions, explain "
+                "the limitations of conclusions drawn from images. "
+                "\n\nUser question: " + question
+            ),
+        }
+    ]
+
+    for image_url in image_data_urls:
+        if not image_url.startswith("data:image/"):
+            raise ValueError("An image has an invalid data URL.")
+
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": image_url},
+        })
+
+    client = Groq(api_key=api_key, timeout=60.0, max_retries=1)
+
+    response = client.chat.completions.create(
+        model="qwen/qwen3.8-27b",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are Engineering AI, an engineering assistant "
+                    "with image-understanding capabilities. Be precise, "
+                    "explain uncertainty, preserve units, and never "
+                    "invent details that cannot be established."
+                ),
+            },
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+        temperature=0.2,
+    )
+
+    answer = response.choices[0].message.content
+
+    if not answer:
+        raise RuntimeError("The vision model returned an empty response.")
+
+    return answer.strip()

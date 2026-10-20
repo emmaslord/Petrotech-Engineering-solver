@@ -34,11 +34,22 @@ from flask_api.analytics_routes import analytics_routes
 from flask_api.authentication import require_auth
 from flask_api.cloud_conversations import cloud_conversations
 from flask_api.cloud_database import SUPABASE_KEY, SUPABASE_URL
+from calculations import (
+    reynolds_number,
+    pipe_pressure_drop,
+    ohms_law,
+    electrical_power,
+    mechanical_stress,
+    beam_bending_stress,
+    density_and_specific_weight,
+)
 from petrotech_ai.assistant import (
     answer_question,
     normalize_ai_mode,
     stream_answer_question,
 )
+
+from petrotech_ai.provider import analyze_images
 
 # File extraction dependencies.
 import numpy as np
@@ -108,6 +119,100 @@ def index():
         "success": True,
         "message": "Engineering AI API running",
     })
+
+
+
+@app.post("/api/calculations/<calculator_name>")
+def calculate_engineering_value(calculator_name):
+    """Run one of the approved engineering calculators."""
+    calculators = {
+        "reynolds-number": (
+            reynolds_number,
+            ["density", "velocity", "diameter", "dynamic_viscosity"],
+        ),
+        "pipe-pressure-drop": (
+            pipe_pressure_drop,
+            ["friction_factor", "length", "diameter", "density", "velocity"],
+        ),
+        "ohms-law": (
+            ohms_law,
+            ["voltage", "current", "resistance"],
+        ),
+        "electrical-power": (
+            electrical_power,
+            ["voltage", "current"],
+        ),
+        "mechanical-stress": (
+            mechanical_stress,
+            ["force", "area"],
+        ),
+        "beam-bending-stress": (
+            beam_bending_stress,
+            ["moment", "distance", "second_moment"],
+        ),
+        "density-specific-weight": (
+            density_and_specific_weight,
+            ["mass", "volume", "gravity"],
+        ),
+    }
+
+    calculator = calculators.get(calculator_name)
+    if calculator is None:
+        return jsonify({
+            "success": False,
+            "error": "Unknown calculator.",
+        }), 404
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({
+            "success": False,
+            "error": "Send calculator inputs as a JSON object.",
+        }), 400
+
+    function, allowed_fields = calculator
+    values = {}
+
+    try:
+        for field in allowed_fields:
+            raw_value = payload.get(field)
+            if calculator_name == "density-specific-weight" and field == "gravity" and raw_value is None:
+                values[field] = 9.80665
+                continue
+
+            # Ohm's law accepts exactly two known values.
+            if calculator_name == "ohms-law" and raw_value is None:
+                values[field] = None
+                continue
+
+            if isinstance(raw_value, bool) or raw_value is None:
+                raise ValueError(f"Provide a numeric value for {field}.")
+
+            values[field] = float(raw_value)
+
+        if calculator_name == "ohms-law":
+            if sum(value is not None for value in values.values()) != 2:
+                raise ValueError(
+                    "Ohm's law requires exactly two of voltage, current, and resistance."
+                )
+
+        if calculator_name == "density-specific-weight" and values["gravity"] is None:
+            values["gravity"] = 9.80665
+
+        result = function(**values)
+
+        return jsonify({
+            "success": True,
+            "calculator": calculator_name,
+            "result": result,
+        })
+
+    except (ValueError, TypeError, OverflowError) as error:
+        return jsonify({
+            "success": False,
+            "error": str(error) or "Invalid calculator inputs.",
+        }), 400
+
 
 
 @app.get("/health")
@@ -257,6 +362,120 @@ def upload_files():
         "files": results,
         "combined_text": combined_text,
     })
+
+
+@app.post("/api/analyze-image")
+@require_auth
+def analyze_image_upload():
+    """Analyze up to three uploaded engineering images."""
+    files = request.files.getlist("files")
+    question = request.form.get("question", "").strip()
+
+    if not question:
+        return jsonify({
+            "success": False,
+            "error": "Enter a question about the images.",
+        }), 400
+
+    if not files or len(files) > 3:
+        return jsonify({
+            "success": False,
+            "error": "Upload between one and three images.",
+        }), 400
+
+    image_data_urls = []
+    allowed_extensions = {"png", "jpg", "jpeg", "webp"}
+
+    for uploaded_file in files:
+        original_name = (uploaded_file.filename or "").strip()
+        filename = Path(original_name.replace("\\", "/")).name
+        safe_name = secure_filename(filename) or "image"
+        suffix = (
+            safe_name.rsplit(".", 1)[-1].lower()
+            if "." in safe_name else ""
+        )
+
+        if suffix not in allowed_extensions:
+            return jsonify({
+                "success": False,
+                "error": (
+                    f"{filename} is not supported. "
+                    "Use PNG, JPG, JPEG, or WEBP."
+                ),
+            }), 400
+
+        raw = uploaded_file.stream.read(5 * 1024 * 1024 + 1)
+
+        if not raw:
+            return jsonify({
+                "success": False,
+                "error": f"{filename} is empty.",
+            }), 400
+
+        if len(raw) > 5 * 1024 * 1024:
+            return jsonify({
+                "success": False,
+                "error": f"{filename} exceeds the 5 MB limit.",
+            }), 413
+
+        try:
+            with Image.open(BytesIO(raw)) as image:
+                if image.width * image.height > 20_000_000:
+                    raise ValueError(
+                        f"{filename} has too many pixels."
+                    )
+
+                image_format = image.format
+                image.verify()
+
+            mime_types = {
+                "PNG": "image/png",
+                "JPEG": "image/jpeg",
+                "WEBP": "image/webp",
+            }
+            mime_type = mime_types.get(image_format)
+
+            if not mime_type:
+                raise ValueError(
+                    f"{filename} must be a PNG, JPEG, or WEBP image."
+                )
+
+            import base64
+
+            image_data_urls.append(
+                f"data:{mime_type};base64,"
+                f"{base64.b64encode(raw).decode('ascii')}"
+            )
+
+        except (ValueError, OSError) as error:
+            return jsonify({
+                "success": False,
+                "error": str(error) or f"Could not read {filename}.",
+            }), 400
+
+    try:
+        answer = analyze_images(question, image_data_urls)
+
+        return jsonify({
+            "success": True,
+            "answer": answer,
+        })
+
+    except ValueError as error:
+        return jsonify({
+            "success": False,
+            "error": str(error),
+        }), 400
+
+    except Exception:
+        app.logger.exception("Image analysis request failed.")
+        return jsonify({
+            "success": False,
+            "error": (
+                "Image analysis failed. Check the server log "
+                "for details and try again."
+            ),
+        }), 502
 
 
 @app.get("/api/config")

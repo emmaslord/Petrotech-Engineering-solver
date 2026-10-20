@@ -140,6 +140,18 @@
                     );
                 }
 
+const overviewUsersCount = document.getElementById(
+    "overview-users-count"
+);
+
+if (overviewUsersCount) {
+    overviewUsersCount.textContent = String(
+        result.count ?? result.users.length
+    );
+}
+
+
+
                 showNotice("Administrator access verified. User list loaded.");
             } catch (error) {
                 showNotice(error.message || "Unable to load users.", true);

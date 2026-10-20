@@ -279,3 +279,76 @@ def bottoms_up_time(
     return (
         annular_capacity_bbl_ft * annular_length_ft
     ) / flow_rate_bbl_min
+
+
+# ============================================
+# ADDITIONAL ENGINEERING CALCULATORS
+# ============================================
+
+def reynolds_number(density, velocity, diameter, dynamic_viscosity):
+    """Calculate the dimensionless Reynolds number."""
+    if density <= 0 or diameter <= 0 or dynamic_viscosity <= 0:
+        raise ValueError("Density, diameter, and viscosity must be positive.")
+    if velocity < 0:
+        raise ValueError("Velocity cannot be negative.")
+    return density * velocity * diameter / dynamic_viscosity
+
+
+def pipe_pressure_drop(friction_factor, length, diameter, density, velocity):
+    """Darcy-Weisbach pressure drop in Pa; use the Darcy friction factor."""
+    if friction_factor <= 0 or length < 0 or diameter <= 0 or density <= 0:
+        raise ValueError("Invalid pipe properties or friction factor.")
+    if velocity < 0:
+        raise ValueError("Velocity cannot be negative.")
+    return friction_factor * (length / diameter) * density * velocity**2 / 2
+
+
+def ohms_law(voltage=None, current=None, resistance=None):
+    """Calculate the missing voltage, current, or resistance."""
+    known = [voltage is not None, current is not None, resistance is not None]
+    if sum(known) != 2:
+        raise ValueError("Provide exactly two of voltage, current, and resistance.")
+
+    if resistance is not None and resistance <= 0:
+        raise ValueError("Resistance must be positive.")
+    if voltage is not None and current is not None:
+        if current == 0:
+            raise ValueError("Current cannot be zero when calculating resistance.")
+        return {"resistance_ohm": voltage / current}
+    if voltage is not None and resistance is not None:
+        return {"current_a": voltage / resistance}
+    if resistance == 0:
+        raise ValueError("Resistance must be positive.")
+    return {"voltage_v": current * resistance}
+
+
+def electrical_power(voltage, current):
+    """Calculate electrical power in watts."""
+    if voltage < 0 or current < 0:
+        raise ValueError("Voltage and current magnitudes cannot be negative.")
+    return voltage * current
+
+
+def mechanical_stress(force, area):
+    """Calculate average axial stress in Pa."""
+    if force < 0 or area <= 0:
+        raise ValueError("Force must be non-negative and area must be positive.")
+    return force / area
+
+
+def beam_bending_stress(moment, distance, second_moment):
+    """Calculate beam bending stress in Pa using sigma = M*c/I."""
+    if moment < 0 or distance < 0 or second_moment <= 0:
+        raise ValueError("Moment and distance must be non-negative; I must be positive.")
+    return moment * distance / second_moment
+
+
+def density_and_specific_weight(mass, volume, gravity=9.80665):
+    """Return density in kg/m³ and specific weight in N/m³."""
+    if mass < 0 or volume <= 0 or gravity <= 0:
+        raise ValueError("Mass must be non-negative; volume and gravity must be positive.")
+    density = mass / volume
+    return {
+        "density_kg_m3": density,
+        "specific_weight_n_m3": density * gravity,
+    }
