@@ -9,3 +9,5 @@ groq
 pypdf
 numpy
 Pillow
+Flask-Limiter
+tavily-python
